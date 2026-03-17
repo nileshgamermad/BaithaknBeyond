@@ -135,12 +135,13 @@ strong {
 .hero-backdrop {
   position: absolute;
   inset: 0;
-  background:
+  background-image:
     linear-gradient(140deg, rgba(7, 28, 34, 0.68), rgba(7, 28, 34, 0.2)),
-    url("https://i.pinimg.com/1200x/e0/68/59/e06859fe70092654c62f9c33ae068e78.jpg")
-      center/cover;
+    url("https://i.pinimg.com/1200x/e0/68/59/e06859fe70092654c62f9c33ae068e78.jpg");
+  background-position: center, center 24%;
+  background-repeat: no-repeat;
+  background-size: cover;
   opacity: 0.92;
-  transform: scale(1.05);
 }
 
 .intro {
