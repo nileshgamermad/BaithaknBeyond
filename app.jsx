@@ -28,7 +28,7 @@ const stories = [
     readTime: "6 min read",
     accent: "",
     mapEmbed:
-      "https://www.openstreetmap.org/export/embed.html?bbox=81.865%2C25.409%2C81.890%2C25.437&layer=mapnik&marker=25.423%2C81.878",
+      "https://www.google.com/maps?q=25.423,81.878&z=15&output=embed",
   },
   {
     id: "allahabad-fort",
@@ -48,7 +48,7 @@ const stories = [
     readTime: "5 min read",
     accent: "",
     mapEmbed:
-      "https://www.openstreetmap.org/export/embed.html?bbox=81.861%2C25.425%2C81.873%2C25.434&layer=mapnik&marker=25.429%2C81.867",
+      "https://www.google.com/maps?q=25.429,81.867&z=16&output=embed",
   },
   {
     id: "netram-kachori",
@@ -69,7 +69,7 @@ const stories = [
     readTime: "4 min read",
     accent: "gold",
     mapEmbed:
-      "https://www.openstreetmap.org/export/embed.html?bbox=81.823%2C25.430%2C81.835%2C25.439&layer=mapnik&marker=25.434%2C81.829",
+      "https://www.google.com/maps?q=25.434,81.829&z=16&output=embed",
   },
   {
     id: "chowk-street-food",
@@ -90,7 +90,7 @@ const stories = [
     readTime: "5 min read",
     accent: "gold",
     mapEmbed:
-      "https://www.openstreetmap.org/export/embed.html?bbox=81.822%2C25.431%2C81.842%2C25.446&layer=mapnik&marker=25.438%2C81.832",
+      "https://www.google.com/maps?q=25.438,81.832&z=16&output=embed",
   },
 ];
 
@@ -123,17 +123,17 @@ const mapStops = [
   {
     title: "Triveni Sangam",
     subtitle: "Best for sunrise boat rides and ritual riverside views",
-    href: "https://www.openstreetmap.org/?mlat=25.423&mlon=81.878#map=15/25.423/81.878",
+    href: "https://www.google.com/maps/search/?api=1&query=25.423,81.878",
   },
   {
     title: "Allahabad Fort",
     subtitle: "Historic riverfront anchor near the Sangam zone",
-    href: "https://www.openstreetmap.org/?mlat=25.429&mlon=81.867#map=16/25.429/81.867",
+    href: "https://www.google.com/maps/search/?api=1&query=25.429,81.867",
   },
   {
     title: "Loknath Market",
     subtitle: "Dense food lanes with breakfast legends and local bustle",
-    href: "https://www.openstreetmap.org/?mlat=25.434&mlon=81.829#map=16/25.434/81.829",
+    href: "https://www.google.com/maps/search/?api=1&query=25.434,81.829",
   },
 ];
 
@@ -484,7 +484,7 @@ function App() {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      <span className="map-stop-kicker">OpenStreetMap</span>
+                      <span className="map-stop-kicker">Google Maps</span>
                       <strong>{stop.title}</strong>
                       <p>{stop.subtitle}</p>
                     </a>
