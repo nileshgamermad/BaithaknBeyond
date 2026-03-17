@@ -360,10 +360,14 @@ function App() {
                     </div>
                   </div>
                   <div className="spotlight-card glass-panel">
-                    <img src={selectedStory.image} alt={selectedStory.alt} />
                     <div className="spotlight-copy">
                       <p className="discover-label">{selectedStory.location}</p>
                       <h2>{selectedStory.title}</h2>
+                      <img
+                        className="spotlight-image"
+                        src={selectedStory.image}
+                        alt={selectedStory.alt}
+                      />
                       <p>{selectedStory.detail}</p>
                       <div className="spotlight-actions">
                         <button
