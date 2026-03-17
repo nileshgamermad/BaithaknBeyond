@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Legendary Netram Kachori | Baithak &amp; Beyond</title>
+  <meta
+    name="description"
+    content="A food story from Baithak & Beyond about Netram Kachori, local breakfast culture, and the flavor memory of Prayagraj."
+  >
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="blog.css">
+</head>
+<body>
+  <main class="page">
+    <a class="back-link" href="../">Back to homepage</a>
+    <section class="hero glass">
+      <img
+        src="https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/c8/46/f9/caption.jpg?w=1000&h=1000&s=1"
+        alt="Fresh kachori served with curry"
+      >
+      <div class="hero-copy">
+        <p class="eyebrow">Food Story</p>
+        <h1>The Legendary Netram Kachori</h1>
+        <p>
+          Some local dishes are famous. Others become rituals. Netram sits in the second category,
+          where breakfast means queue, conversation, and total certainty about what to order.
+        </p>
+        <div class="meta-row">
+          <span class="meta-pill">Loknath, Prayagraj</span>
+          <span class="meta-pill">4 min read</span>
+          <span class="meta-pill">Breakfast classic</span>
+        </div>
+      </div>
+    </section>
+    <section class="content">
+      <article class="article glass">
+        <p>
+          The plate looks simple enough at first glance: kachori, sabzi, heat, crunch, comfort.
+          But what keeps people returning is the confidence of the whole experience. It feels
+          practiced, familiar, and exactly tuned to local taste.
+        </p>
+        <p>
+          Netram's reputation is built as much on atmosphere as flavor. You arrive early. You watch
+          the line move. You listen to people placing orders with the kind of speed that only comes
+          from habit. Then your own plate arrives, and suddenly the queue makes complete sense.
+        </p>
+        <h2>The local rhythm of breakfast</h2>
+        <p>
+          In Prayagraj, food stories are usually social stories. Breakfast is rarely only fuel. It
+          is a checkpoint in the day where recommendations, neighborhood habits, and long memory all
+          meet on one plate.
+        </p>
+        <p>
+          That is why Netram works so well as a first food stop for visitors. It introduces flavor,
+          pace, and local confidence at the same time.
+        </p>
+      </article>
+      <aside class="aside-stack">
+        <section class="aside-card glass">
+          <h3>Visit note</h3>
+          <p>Morning is best. Come hungry, order without overthinking, and leave room for sweets later.</p>
+        </section>
+        <section class="aside-card glass">
+          <h3>Map</h3>
+          <p>Use Loknath as your breakfast start, then branch into nearby lanes for more small stops.</p>
+          <div class="map-frame">
+            <iframe
+              title="Map of Loknath area"
+              src="https://www.openstreetmap.org/export/embed.html?bbox=81.823%2C25.430%2C81.835%2C25.439&layer=mapnik&marker=25.434%2C81.829"
+              loading="lazy"
+            ></iframe>
+          </div>
+          <div class="cta-row">
+            <a class="button" href="https://www.openstreetmap.org/?mlat=25.434&mlon=81.829#map=16/25.434/81.829" target="_blank" rel="noreferrer">Open map</a>
+            <a class="button ghost" href="../">Explore more stories</a>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </main>
+  <button class="theme-switch" type="button" id="themeSwitch" aria-label="Toggle theme">
+    <span class="switch-track"><span class="switch-thumb"></span></span>
+    <span id="themeLabel">Dark mode</span>
+  </button>
+  <script>
+    (function () {
+      const key = "baithak-theme";
+      const button = document.getElementById("themeSwitch");
+      const label = document.getElementById("themeLabel");
+      const current = localStorage.getItem(key) || "light";
+      document.body.dataset.theme = current;
+      label.textContent = current === "light" ? "Dark mode" : "Light mode";
+      button.addEventListener("click", function () {
+        const next = document.body.dataset.theme === "dark" ? "light" : "dark";
+        document.body.dataset.theme = next;
+        localStorage.setItem(key, next);
+        label.textContent = next === "light" ? "Dark mode" : "Light mode";
+      });
+    })();
+  </script>
+</body>
+</html>

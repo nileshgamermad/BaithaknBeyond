@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Legends of Triveni Sangam | Baithak &amp; Beyond</title>
+  <meta
+    name="description"
+    content="A heritage story from Baithak & Beyond about Triveni Sangam, ritual memory, and the riverfront rhythm of Prayagraj."
+  >
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="blog.css">
+</head>
+<body>
+  <main class="page">
+    <a class="back-link" href="../">Back to homepage</a>
+    <section class="hero glass">
+      <img
+        src="https://dharmikbharatyatra.com/wp-content/uploads/2024/12/Boat-ride-in-prayagraj-1024x576.webp"
+        alt="Boats gathered near the riverbank"
+      >
+      <div class="hero-copy">
+        <p class="eyebrow">Heritage Story</p>
+        <h1>The Legends of Triveni Sangam</h1>
+        <p>
+          The Sangam remains one of Prayagraj's most emotionally charged spaces, where myth,
+          pilgrimage, river light, and daily life overlap from sunrise onward.
+        </p>
+        <div class="meta-row">
+          <span class="meta-pill">Triveni Sangam</span>
+          <span class="meta-pill">6 min read</span>
+          <span class="meta-pill">Prayagraj heritage</span>
+        </div>
+      </div>
+    </section>
+    <section class="content">
+      <article class="article glass">
+        <p>
+          A morning at Triveni Sangam begins before the city fully gathers itself. The air is cool,
+          the river looks silver, and boats drift toward the confluence carrying pilgrims,
+          photographers, priests, and curious first-time visitors.
+        </p>
+        <p>
+          What makes the place unforgettable is not just religious significance, though that is
+          central. It is the feeling that memory here is still active. Every conversation seems to
+          connect the present moment to something older: a legend, a family ritual, a winter visit,
+          a recommendation handed down across generations.
+        </p>
+        <h2>Why it still matters</h2>
+        <p>
+          Sangam is one of those rare places where sacred geography and ordinary movement coexist.
+          Devotion is visible, but so is routine. Children watch the boats. Tea vendors work
+          quickly. Visitors negotiate price, timing, and route. The spiritual and the practical sit
+          beside each other without friction.
+        </p>
+        <p>
+          That is why it continues to shape the identity of Prayagraj. The riverfront is not only a
+          destination. It is part of the city's emotional vocabulary, and it gives a first-time
+          visitor a direct way into the local imagination.
+        </p>
+      </article>
+      <aside class="aside-stack">
+        <section class="aside-card glass">
+          <h3>Visit note</h3>
+          <p>Go early for softer light, calmer water, and a more reflective first experience.</p>
+        </section>
+        <section class="aside-card glass">
+          <h3>Map</h3>
+          <p>Open the Sangam area directly and use it as the anchor for a riverside morning route.</p>
+          <div class="map-frame">
+            <iframe
+              title="Map of Triveni Sangam"
+              src="https://www.openstreetmap.org/export/embed.html?bbox=81.865%2C25.409%2C81.890%2C25.437&layer=mapnik&marker=25.423%2C81.878"
+              loading="lazy"
+            ></iframe>
+          </div>
+          <div class="cta-row">
+            <a class="button" href="https://www.openstreetmap.org/?mlat=25.423&mlon=81.878#map=15/25.423/81.878" target="_blank" rel="noreferrer">Open map</a>
+            <a class="button ghost" href="../">Explore more stories</a>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </main>
+  <button class="theme-switch" type="button" id="themeSwitch" aria-label="Toggle theme">
+    <span class="switch-track"><span class="switch-thumb"></span></span>
+    <span id="themeLabel">Dark mode</span>
+  </button>
+  <script>
+    (function () {
+      const key = "baithak-theme";
+      const button = document.getElementById("themeSwitch");
+      const label = document.getElementById("themeLabel");
+      const current = localStorage.getItem(key) || "light";
+      document.body.dataset.theme = current;
+      label.textContent = current === "light" ? "Dark mode" : "Light mode";
+      button.addEventListener("click", function () {
+        const next = document.body.dataset.theme === "dark" ? "light" : "dark";
+        document.body.dataset.theme = next;
+        localStorage.setItem(key, next);
+        label.textContent = next === "light" ? "Dark mode" : "Light mode";
+      });
+    })();
+  </script>
+</body>
+</html>

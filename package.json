@@ -1,0 +1,13 @@
+{
+  "name": "baithakn-beyond",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Static site deployment for Baithak & Beyond using GitHub Pages.",
+  "scripts": {
+    "build": "node scripts/prepare-gh-pages.mjs",
+    "deploy": "npm run build && gh-pages -d dist"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
+  }
+}

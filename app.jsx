@@ -2,64 +2,95 @@ const { useEffect, useMemo, useState } = React;
 
 const sections = [
   { id: "home", label: "Home" },
-  { id: "history", label: "History" },
-  { id: "food", label: "Food" },
-  { id: "travel", label: "Travel" },
+  { id: "stories", label: "Stories" },
+  { id: "planner", label: "Planner" },
+  { id: "map", label: "Map" },
   { id: "about", label: "About" },
 ];
 
 const stories = [
   {
     id: "triveni-sangam",
+    slug: "triveni-sangam.html",
     category: "history",
+    categoryLabel: "Heritage Story",
     title: "The Legends of Triveni Sangam",
-    image: "https://dharmikbharatyatra.com/wp-content/uploads/2024/12/Boat-ride-in-prayagraj-1024x576.webp",
+    image:
+      "https://dharmikbharatyatra.com/wp-content/uploads/2024/12/Boat-ride-in-prayagraj-1024x576.webp",
     alt: "Boats gathered near the riverbank",
     summary:
-      "Walk through the layered myths, pilgrim rituals, and living memory that continue to shape the city's most sacred meeting point.",
+      "Walk through layered myths, pilgrim rituals, and living memory at Prayagraj's most sacred meeting point.",
     detail:
-      "Morning boat rides, winter mist, and ritual gatherings make the Sangam one of Prayagraj's most emotional public spaces. It is a place where epic memory and daily devotion continue to overlap.",
-    cta: "Read More",
+      "The Sangam is more than a landmark. It is a living stage for devotion, winter light, whispered legends, and the daily rhythm of the city beside the river.",
+    excerpt:
+      "A riverfront morning here feels ceremonial even before the rituals begin. Boats drift through the mist, chants travel softly over the water, and every visitor arrives carrying a different story.",
+    location: "Triveni Sangam",
+    readTime: "6 min read",
     accent: "",
+    mapEmbed:
+      "https://www.openstreetmap.org/export/embed.html?bbox=81.865%2C25.409%2C81.890%2C25.437&layer=mapnik&marker=25.423%2C81.878",
   },
   {
     id: "allahabad-fort",
+    slug: "allahabad-fort.html",
     category: "history",
+    categoryLabel: "Heritage Story",
     title: "Inside Allahabad Fort",
     image: "https://www.optimatravels.com/images/allahabad-images/allahabad-fort-head.jpg",
     alt: "Historic fort architecture lit by sunlight",
     summary:
-      "Discover the Mughal grandeur, hidden courtyards, and enduring riverfront presence of one of Prayagraj's most iconic landmarks.",
+      "Discover Mughal grandeur, hidden courtyards, and the riverfront presence of one of the city's iconic landmarks.",
     detail:
-      "Built under Akbar and shaped by later layers of use, the fort still anchors conversations about empire, spirituality, and the geography of the riverfront.",
-    cta: "Read More",
+      "Built under Akbar and layered by later eras, the fort still anchors conversations about empire, geography, and the spiritual pull of the confluence nearby.",
+    excerpt:
+      "The fort carries scale in a quiet way. Walls, gateways, and stone surfaces hold together memory, defense, and faith with surprising calm.",
+    location: "Allahabad Fort",
+    readTime: "5 min read",
     accent: "",
+    mapEmbed:
+      "https://www.openstreetmap.org/export/embed.html?bbox=81.861%2C25.425%2C81.873%2C25.434&layer=mapnik&marker=25.429%2C81.867",
   },
   {
     id: "netram-kachori",
+    slug: "netram-kachori.html",
     category: "food",
+    categoryLabel: "Food Story",
     title: "The Legendary Netram Kachori",
-    image: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/c8/46/f9/caption.jpg?w=1000&h=1000&s=1",
+    image:
+      "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/c8/46/f9/caption.jpg?w=1000&h=1000&s=1",
     alt: "Fresh kachori served with curry",
     summary:
-      "A crisp, comforting classic that locals swear by, served with spiced sabzi and stories that begin long before breakfast.",
+      "A crisp, comforting classic locals swear by, served with spiced sabzi and stories that begin long before breakfast.",
     detail:
-      "The charm is not only in the plate but in the ritual: early queues, familiar banter, and the warm feeling of eating something the city truly claims as its own.",
-    cta: "Read More",
+      "Netram is part meal and part ritual. You arrive early, stand in line with everyone else, and leave with a plate that feels stitched into the city's everyday identity.",
+    excerpt:
+      "The first bite explains the queue. Hot kachori, soft sabzi, and the kind of confident seasoning that only comes from repetition over years.",
+    location: "Loknath, Prayagraj",
+    readTime: "4 min read",
     accent: "gold",
+    mapEmbed:
+      "https://www.openstreetmap.org/export/embed.html?bbox=81.823%2C25.430%2C81.835%2C25.439&layer=mapnik&marker=25.434%2C81.829",
   },
   {
     id: "chowk-street-food",
+    slug: "chowk-street-food.html",
     category: "food",
+    categoryLabel: "Food Story",
     title: "Street Food of Chowk",
-    image: "https://www.thecitizen.in/h-upload/old_images/1500x900_155909-c4a62b6e399ac05a08d9e8e5bb402dc6.webp",
+    image:
+      "https://www.thecitizen.in/h-upload/old_images/1500x900_155909-c4a62b6e399ac05a08d9e8e5bb402dc6.webp",
     alt: "Busy Indian street food lane with shops and crowds",
     summary:
       "From quick chaat stops to deep-fried favourites, Chowk remains a delicious map of everyday life in the old city.",
     detail:
-      "Every lane offers a different rhythm, from evening snack circuits to heritage sweet shops. It is the sort of place where local memory is passed down by recommendation.",
-    cta: "Discover",
+      "Every lane offers a new rhythm, from evening snack circuits to old sweet shops. The best route is usually the one handed to you by someone local at the right moment.",
+    excerpt:
+      "Chowk is not a single stall. It is momentum. Smoke, spice, chatter, steel plates, and a crowd that somehow always knows where to stop next.",
+    location: "Chowk, Prayagraj",
+    readTime: "5 min read",
     accent: "gold",
+    mapEmbed:
+      "https://www.openstreetmap.org/export/embed.html?bbox=81.822%2C25.431%2C81.842%2C25.446&layer=mapnik&marker=25.438%2C81.832",
   },
 ];
 
@@ -77,22 +108,49 @@ const plannerOptions = {
 };
 
 const plannerSuggestions = {
-  "calm-morning": "Start at Triveni Sangam for a peaceful boat ride and soft morning light.",
-  "calm-afternoon": "Take a slower riverfront detour and settle into a shaded baithak with chai.",
-  "calm-evening": "Pick a sunset walk near the river and end with a quiet tea stop.",
-  "heritage-morning": "Visit Allahabad Fort early, then continue toward older lanes before the crowds build.",
-  "heritage-afternoon": "Spend the afternoon on a layered city walk through forts, shrines, and markets.",
-  "heritage-evening": "Choose an old-city stroll with architecture spotting and a light snack stop.",
-  "food-morning": "Begin at Netram for kachori, then wander toward sweet shops while the city wakes up.",
-  "food-afternoon": "Build a compact tasting trail with chaat, lassi, and one classic local dessert.",
-  "food-evening": "Head to Chowk for a fuller street-food circuit with the liveliest atmosphere.",
+  "calm-morning": "Start at Triveni Sangam for a quiet boat ride, then move into an unhurried chai stop.",
+  "calm-afternoon": "Take a slower riverside detour and linger in a shaded baithak before sunset plans.",
+  "calm-evening": "Choose a sunset walk near the river and keep dinner light and local.",
+  "heritage-morning": "Begin with Allahabad Fort and nearby heritage stops before the streets fill out.",
+  "heritage-afternoon": "Spend the afternoon tracing layered architecture, shrines, and the old city edge.",
+  "heritage-evening": "Pick an old-city stroll with architecture spotting and one classic sweet stop.",
+  "food-morning": "Go straight to Netram for breakfast, then follow recommendations toward Loknath.",
+  "food-afternoon": "Build a short tasting route with chaat, lassi, and one old-school dessert shop.",
+  "food-evening": "Head to Chowk for the liveliest street-food circuit and stay flexible.",
 };
+
+const mapStops = [
+  {
+    title: "Triveni Sangam",
+    subtitle: "Best for sunrise boat rides and ritual riverside views",
+    href: "https://www.openstreetmap.org/?mlat=25.423&mlon=81.878#map=15/25.423/81.878",
+  },
+  {
+    title: "Allahabad Fort",
+    subtitle: "Historic riverfront anchor near the Sangam zone",
+    href: "https://www.openstreetmap.org/?mlat=25.429&mlon=81.867#map=16/25.429/81.867",
+  },
+  {
+    title: "Loknath Market",
+    subtitle: "Dense food lanes with breakfast legends and local bustle",
+    href: "https://www.openstreetmap.org/?mlat=25.434&mlon=81.829#map=16/25.434/81.829",
+  },
+];
 
 function App() {
   const [activeSection, setActiveSection] = useState("home");
   const [activeFilter, setActiveFilter] = useState("all");
   const [selectedStoryId, setSelectedStoryId] = useState("triveni-sangam");
+  const [modalStoryId, setModalStoryId] = useState("");
   const [planner, setPlanner] = useState({ mood: "food", time: "morning" });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem("baithak-theme") || "light";
+    } catch {
+      return "light";
+    }
+  });
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -106,7 +164,7 @@ function App() {
         }
       },
       {
-        rootMargin: "-30% 0px -45% 0px",
+        rootMargin: "-25% 0px -45% 0px",
         threshold: [0.2, 0.4, 0.6],
       }
     );
@@ -121,258 +179,408 @@ function App() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    document.body.dataset.theme = theme;
+    try {
+      localStorage.setItem("baithak-theme", theme);
+    } catch {}
+  }, [theme]);
+
+  useEffect(() => {
+    document.body.classList.toggle("modal-open", Boolean(modalStoryId));
+    return () => document.body.classList.remove("modal-open");
+  }, [modalStoryId]);
+
   const filteredStories = useMemo(() => {
-    if (activeFilter === "all") {
-      return stories;
-    }
-    return stories.filter((story) => story.category === activeFilter);
-  }, [activeFilter]);
+    const query = searchTerm.trim().toLowerCase();
+
+    return stories.filter((story) => {
+      const matchesFilter = activeFilter === "all" || story.category === activeFilter;
+      const matchesSearch =
+        !query ||
+        [story.title, story.summary, story.detail, story.location, story.categoryLabel]
+          .join(" ")
+          .toLowerCase()
+          .includes(query);
+
+      return matchesFilter && matchesSearch;
+    });
+  }, [activeFilter, searchTerm]);
 
   const selectedStory =
     stories.find((story) => story.id === selectedStoryId) ?? stories[0];
+
+  const modalStory =
+    stories.find((story) => story.id === modalStoryId) ?? selectedStory;
 
   const plannerKey = `${planner.mood}-${planner.time}`;
   const plannerSuggestion = plannerSuggestions[plannerKey];
 
   const jumpToSection = (sectionId) => {
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
     setActiveSection(sectionId);
   };
 
+  const openStory = (storyId) => {
+    setSelectedStoryId(storyId);
+    setModalStoryId(storyId);
+  };
+
   return (
-    <div className="page-shell">
-      <header className="hero-header" id="home">
-        <div className="container intro">
-          <img className="site-logo" src="logo.png" alt="Baithak and Beyond logo" />
-          <p className="brand-kicker">
-            Stories, Culture, and Flavours from the Heart of Prayagraj
-          </p>
-          <div className="ornament" aria-hidden="true">
-            <span></span>
-            <i></i>
-            <span></span>
-          </div>
-        </div>
+    <>
+      <div className={`page-shell ${modalStoryId ? "is-blurred" : ""}`}>
+        <header className="hero-header" id="home">
+          <div className="hero-backdrop"></div>
+          <div className="container site-container intro">
+            <div className="eyebrow-pill">Digital baithak for culture, food, and local travel</div>
+            <img className="site-logo" src="logo.png" alt="Baithak and Beyond logo" />
+            <h1>Prayagraj stories with a warmer, more modern home online.</h1>
+            <p className="brand-kicker">
+              Browse heritage notes, food trails, and street-level city guides with immersive cards,
+              quick previews, and full blog pages.
+            </p>
 
-        <section className="container hero-frame">
-          <div className="hero-image-wrap">
-            <img
-              src="https://cdn.britannica.com/29/266229-050-F795307B/Sadhu-Hindu-holy-man-gestures-during-religious-procession-of-the-Niranjani-Akhara-ahead-of-Maha-Kumbh-Mela-Prayagraj-2025.jpg"
-              alt="Hindu holy man gestures"
-            />
-          </div>
-          <button className="hero-cta" type="button" onClick={() => jumpToSection("discover")}>
-            Explore Prayagraj
-          </button>
-        </section>
-      </header>
-
-      <nav className="container top-nav" aria-label="Primary">
-        {sections.map((section) => (
-          <button
-            key={section.id}
-            type="button"
-            className={`nav-link ${activeSection === section.id ? "active" : ""} ${
-              section.id === "discover" ? "nav-button" : ""
-            }`}
-            onClick={() => jumpToSection(section.id)}
-          >
-            {section.label}
-          </button>
-        ))}
-        <button
-          type="button"
-          className="nav-link nav-button"
-          onClick={() => jumpToSection("discover")}
-        >
-          Discover Prayagraj
-        </button>
-      </nav>
-
-      <main className="container page-content">
-        <section className="content-section" id="history">
-          <div className="section-heading">
-            <h2>Featured Stories</h2>
-          </div>
-
-          <div className="filter-row" aria-label="Story filters">
-            {[
-              { value: "all", label: "All Stories" },
-              { value: "history", label: "History" },
-              { value: "food", label: "Food" },
-            ].map((filter) => (
-              <button
-                key={filter.value}
-                type="button"
-                className={`filter-chip ${activeFilter === filter.value ? "active" : ""}`}
-                onClick={() => setActiveFilter(filter.value)}
-              >
-                {filter.label}
+            <div className="hero-toolbar glass-panel">
+              <label className="search-shell" aria-label="Search posts">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M10.5 3a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Zm9.2 14.8 1.4 1.4-3.4-3.4 1.4-1.4 0.6 0.6Z"></path>
+                </svg>
+                <input
+                  type="search"
+                  placeholder="Search stories, food spots, or landmarks"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                />
+              </label>
+              <button className="hero-cta" type="button" onClick={() => jumpToSection("stories")}>
+                Explore Stories
               </button>
-            ))}
+            </div>
           </div>
+        </header>
 
-          <div className="story-grid">
-            {filteredStories.map((story) => (
-              <article
-                key={story.id}
-                className={`story-card ${selectedStoryId === story.id ? "selected" : ""}`}
-              >
-                <img src={story.image} alt={story.alt} />
-                <div className="story-copy">
-                  <p className="story-tag">
-                    {story.category === "history" ? "Heritage Story" : "Food Story"}
-                  </p>
-                  <h3>{story.title}</h3>
-                  <p>{story.summary}</p>
-                  <div className="story-actions">
-                    <button
-                      type="button"
-                      className={`card-button ${story.accent}`}
-                      onClick={() => setSelectedStoryId(story.id)}
-                    >
-                      {selectedStoryId === story.id ? "Selected" : story.cta}
-                    </button>
-                    <button
-                      type="button"
-                      className="story-toggle"
-                      onClick={() =>
-                        setSelectedStoryId((current) => (current === story.id ? "" : story.id))
-                      }
-                    >
-                      {selectedStoryId === story.id ? "Hide Details" : "Quick View"}
-                    </button>
+        <nav className="container site-container top-nav glass-panel" aria-label="Primary">
+          {sections.map((section) => (
+            <button
+              key={section.id}
+              type="button"
+              className={`nav-link ${activeSection === section.id ? "active" : ""}`}
+              onClick={() => jumpToSection(section.id)}
+            >
+              {section.label}
+            </button>
+          ))}
+        </nav>
+
+        <main className="container site-container page-content">
+          <section className="section-stack" id="stories">
+            <div className="section-heading">
+              <div>
+                <p className="section-kicker">Featured journal</p>
+                <h2>Searchable glassmorphism cards with rich post previews.</h2>
+              </div>
+            </div>
+
+            <div className="panel-row">
+              <div className="filter-row" aria-label="Story filters">
+                {[
+                  { value: "all", label: "All Stories" },
+                  { value: "history", label: "History" },
+                  { value: "food", label: "Food" },
+                ].map((filter) => (
+                  <button
+                    key={filter.value}
+                    type="button"
+                    className={`filter-chip ${activeFilter === filter.value ? "active" : ""}`}
+                    onClick={() => setActiveFilter(filter.value)}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
+              </div>
+              <p className="result-copy">
+                {filteredStories.length} post{filteredStories.length === 1 ? "" : "s"} matching your
+                view
+              </p>
+            </div>
+
+            <div className="story-grid row g-4">
+              {filteredStories.map((story) => (
+                <div key={story.id} className="col-12 col-md-6">
+                  <article
+                    className={`story-card glass-panel ${
+                      selectedStoryId === story.id ? "selected" : ""
+                    }`}
+                  >
+                    <div className="story-media">
+                      <img src={story.image} alt={story.alt} />
+                      <div className="story-badge-row">
+                        <span className="story-tag">{story.categoryLabel}</span>
+                        <span className="read-pill">{story.readTime}</span>
+                      </div>
+                    </div>
+                    <div className="story-copy">
+                      <p className="story-location">{story.location}</p>
+                      <h3>{story.title}</h3>
+                      <p>{story.summary}</p>
+                      <div className="story-actions">
+                        <button
+                          type="button"
+                          className={`card-button ${story.accent}`}
+                          onClick={() => openStory(story.id)}
+                        >
+                          Quick View
+                        </button>
+                        <a className="ghost-link" href={`posts/${story.slug}`}>
+                          Read full page
+                        </a>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              ))}
+            </div>
+
+            {!filteredStories.length && (
+              <div className="empty-state glass-panel">
+                <h3>No posts match that search yet.</h3>
+                <p>Try searching for a landmark, a food spot, or switch back to all stories.</p>
+              </div>
+            )}
+          </section>
+
+          <section className="content-with-sidebar row g-4 align-items-start" id="planner">
+            <div className="col-12 col-xl-8">
+              <section className="interactive-panel row g-4">
+                <div className="story-spotlight col-12 col-lg-7">
+                  <div className="section-heading">
+                    <div>
+                      <p className="section-kicker">Spotlight</p>
+                      <h2>Selected story card</h2>
+                    </div>
+                  </div>
+                  <div className="spotlight-card glass-panel">
+                    <img src={selectedStory.image} alt={selectedStory.alt} />
+                    <div className="spotlight-copy">
+                      <p className="discover-label">{selectedStory.location}</p>
+                      <h2>{selectedStory.title}</h2>
+                      <p>{selectedStory.detail}</p>
+                      <div className="spotlight-actions">
+                        <button
+                          type="button"
+                          className={`card-button ${selectedStory.accent}`}
+                          onClick={() => openStory(selectedStory.id)}
+                        >
+                          Open card view
+                        </button>
+                        <a className="ghost-link" href={`posts/${selectedStory.slug}`}>
+                          Open blog page
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </article>
-            ))}
-          </div>
-        </section>
 
-        <section className="interactive-panel">
-          <div className="story-spotlight" id="travel">
-            <div className="section-heading">
-              <h2>Story Spotlight</h2>
+                <aside className="planner-card glass-panel col-12 col-lg-5">
+                  <div className="section-heading planner-heading">
+                    <div>
+                      <p className="section-kicker">Trip switchboard</p>
+                      <h2>Plan your visit</h2>
+                    </div>
+                  </div>
+                  <p className="planner-copy">
+                    Pick a mood and time of day to generate a locally grounded starting point.
+                  </p>
+                  <label className="planner-field">
+                    <span>Mood</span>
+                    <select
+                      value={planner.mood}
+                      onChange={(event) =>
+                        setPlanner((current) => ({ ...current, mood: event.target.value }))
+                      }
+                    >
+                      {plannerOptions.mood.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="planner-field">
+                    <span>Time</span>
+                    <select
+                      value={planner.time}
+                      onChange={(event) =>
+                        setPlanner((current) => ({ ...current, time: event.target.value }))
+                      }
+                    >
+                      {plannerOptions.time.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className="planner-result">
+                    <strong>Suggested Start</strong>
+                    <p>{plannerSuggestion}</p>
+                  </div>
+                </aside>
+              </section>
             </div>
-            <div className="spotlight-card">
-              <img src={selectedStory.image} alt={selectedStory.alt} />
-              <div className="spotlight-copy">
-                <p className="discover-label">Now Exploring</p>
-                <h2>{selectedStory.title}</h2>
-                <p>{selectedStory.detail}</p>
-                <button
-                  type="button"
-                  className={`card-button ${selectedStory.accent}`}
-                  onClick={() => jumpToSection("discover")}
-                >
-                  Build This Route
+
+            <aside className="col-12 col-xl-4">
+              <div className="recent-posts-panel glass-panel">
+                <div className="section-heading recent-posts-heading">
+                  <div>
+                    <p className="section-kicker">Browse faster</p>
+                    <h2>Recent posts</h2>
+                  </div>
+                </div>
+                <div className="recent-posts-list" aria-label="Recent posts">
+                  {stories.map((story) => (
+                    <button
+                      key={story.id}
+                      type="button"
+                      className={`recent-post-link ${selectedStoryId === story.id ? "active" : ""}`}
+                      onClick={() => setSelectedStoryId(story.id)}
+                    >
+                      <span className="recent-post-category">{story.categoryLabel}</span>
+                      <strong>{story.title}</strong>
+                      <span>{story.location}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </aside>
+          </section>
+
+          <section className="map-section" id="map">
+            <div className="section-heading">
+              <div>
+                <p className="section-kicker">Real map integration</p>
+                <h2>Map the stories directly into the city.</h2>
+              </div>
+            </div>
+
+            <div className="map-layout row g-4 align-items-stretch">
+              <div className="col-12 col-lg-8">
+                <div className="map-frame glass-panel">
+                  <iframe
+                    title={`Map of ${selectedStory.title}`}
+                    src={selectedStory.mapEmbed}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  ></iframe>
+                </div>
+              </div>
+              <div className="col-12 col-lg-4">
+                <div className="map-card-stack">
+                  {mapStops.map((stop) => (
+                    <a
+                      key={stop.title}
+                      className="map-stop-card glass-panel"
+                      href={stop.href}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <span className="map-stop-kicker">OpenStreetMap</span>
+                      <strong>{stop.title}</strong>
+                      <p>{stop.subtitle}</p>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="discover-panel glass-panel" id="about">
+            <div className="discover-copy">
+              <p className="discover-label">About the platform</p>
+              <h2>Built like a magazine, navigated like a modern landing page.</h2>
+              <p>
+                The homepage now supports dark mode, quick-view overlays, separate post pages, live
+                search, and map-driven discovery while keeping the local tone at the center.
+              </p>
+            </div>
+            <div className="discover-actions">
+              <a className="card-button" href="mailto:hello@baithakandbeyond.com">
+                Contact
+              </a>
+              <a className="ghost-link" href="posts/triveni-sangam.html">
+                View sample blog page
+              </a>
+            </div>
+          </section>
+        </main>
+
+        <footer className="subscribe-bar">
+          <div className="container site-container subscribe-inner">
+            <div>
+              <p className="section-kicker footer-kicker">Stay in the loop</p>
+              <h2>Join the Baithak</h2>
+              <p>Subscribe for city stories, seasonal food notes, and travel routes from Prayagraj.</p>
+            </div>
+            <a className="subscribe-button" href="mailto:hello@baithakandbeyond.com">
+              Subscribe
+            </a>
+          </div>
+        </footer>
+      </div>
+
+      <button
+        type="button"
+        className="theme-switch"
+        onClick={() => setTheme((current) => (current === "light" ? "dark" : "light"))}
+        aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+      >
+        <span className="theme-switch-track">
+          <span className={`theme-switch-thumb ${theme === "dark" ? "is-dark" : ""}`}></span>
+        </span>
+        <span>{theme === "light" ? "Dark mode" : "Light mode"}</span>
+      </button>
+
+      {modalStoryId && (
+        <div
+          className="story-modal-backdrop"
+          role="presentation"
+          onClick={() => setModalStoryId("")}
+        >
+          <article
+            className="story-modal glass-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="story-modal-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="modal-close"
+              aria-label="Close quick view"
+              onClick={() => setModalStoryId("")}
+            >
+              ×
+            </button>
+            <img src={modalStory.image} alt={modalStory.alt} />
+            <div className="story-modal-copy">
+              <p className="story-tag">{modalStory.categoryLabel}</p>
+              <h2 id="story-modal-title">{modalStory.title}</h2>
+              <p className="story-location">{modalStory.location}</p>
+              <p>{modalStory.excerpt}</p>
+              <p>{modalStory.detail}</p>
+              <div className="story-actions">
+                <a className={`card-button ${modalStory.accent}`} href={`posts/${modalStory.slug}`}>
+                  Read full story
+                </a>
+                <button type="button" className="ghost-link" onClick={() => setModalStoryId("")}>
+                  Close preview
                 </button>
               </div>
             </div>
-          </div>
-
-          <aside className="planner-card">
-            <div className="section-heading planner-heading">
-              <h2>Plan Your Visit</h2>
-            </div>
-            <p className="planner-copy">
-              Choose the mood and time of day, and the page will suggest a starting point.
-            </p>
-            <label className="planner-field">
-              <span>Mood</span>
-              <select
-                value={planner.mood}
-                onChange={(event) =>
-                  setPlanner((current) => ({ ...current, mood: event.target.value }))
-                }
-              >
-                {plannerOptions.mood.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="planner-field">
-              <span>Time</span>
-              <select
-                value={planner.time}
-                onChange={(event) =>
-                  setPlanner((current) => ({ ...current, time: event.target.value }))
-                }
-              >
-                {plannerOptions.time.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="planner-result">
-              <strong>Suggested Start</strong>
-              <p>{plannerSuggestion}</p>
-            </div>
-          </aside>
-        </section>
-
-        <section className="content-section" id="food">
-          <div className="section-heading">
-            <h2>Food Stories</h2>
-          </div>
-          <div className="food-callout">
-            <p>
-              Prayagraj tastes best when you follow the local rhythm: breakfast first, chatter
-              second, and one extra plate you did not plan for.
-            </p>
-            <button
-              type="button"
-              className="ghost-link ghost-button"
-              onClick={() => {
-                setActiveFilter("food");
-                jumpToSection("history");
-              }}
-            >
-              Show Food Picks
-            </button>
-          </div>
-        </section>
-
-        <section className="discover-panel" id="discover">
-          <div className="discover-copy">
-            <p className="discover-label">Discover Prayagraj</p>
-            <h2>Stories that feel rooted, warm, and unmistakably local.</h2>
-            <p>
-              Explore heritage walks, riverside rituals, neighbourhood food trails, and the
-              quieter textures of a city that carries history in everyday life.
-            </p>
-          </div>
-          <div className="discover-actions">
-            <a className="card-button" href="mailto:hello@baithakandbeyond.com">
-              Contact
-            </a>
-            <button
-              type="button"
-              className="ghost-link ghost-button"
-              onClick={() => jumpToSection("about")}
-            >
-              Learn More
-            </button>
-          </div>
-        </section>
-      </main>
-
-      <footer className="subscribe-bar" id="about">
-        <div className="container subscribe-inner">
-          <div>
-            <h2>Join the Baithak!</h2>
-            <p>Subscribe for stories, recipes, and travel notes from Prayagraj.</p>
-          </div>
-          <a className="subscribe-button" href="mailto:hello@baithakandbeyond.com">
-            Subscribe
-          </a>
+          </article>
         </div>
-      </footer>
-    </div>
+      )}
+    </>
   );
 }
 
