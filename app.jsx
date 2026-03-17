@@ -277,7 +277,6 @@ function App() {
             <div className="section-heading">
               <div>
                 <p className="section-kicker">Featured journal</p>
-                <h2>Searchable glassmorphism cards with rich post previews.</h2>
               </div>
             </div>
 
