@@ -845,6 +845,19 @@ body[data-theme="dark"] .search-shell {
   line-height: 1;
 }
 
+@media (min-width: 1200px) {
+  .story-spotlight .spotlight-card {
+    grid-template-columns: 1fr;
+  }
+
+  .story-spotlight .spotlight-card img {
+    height: clamp(260px, 28vw, 340px);
+    object-fit: contain;
+    object-position: center;
+    background: var(--surface-strong);
+  }
+}
+
 @media (max-width: 1199px) {
   .recent-posts-panel {
     position: static;
