@@ -755,13 +755,10 @@ body[data-theme="dark"] .search-shell {
 }
 
 .theme-switch {
-  position: fixed;
-  top: 16px;
-  right: 20px;
-  z-index: 51;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 10px;
+  margin: 24px auto;
   padding: 10px 14px;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -771,6 +768,7 @@ body[data-theme="dark"] .search-shell {
   font-size: 0.82rem;
   font-weight: 800;
   white-space: nowrap;
+  width: fit-content;
 }
 
 .theme-switch-track {
@@ -932,8 +930,7 @@ body[data-theme="dark"] .search-shell {
   }
 
   .theme-switch {
-    right: 12px;
-    top: 12px;
+    margin: 16px auto;
   }
 }
 
