@@ -874,6 +874,10 @@ body[data-theme="dark"] .search-shell {
 }
 
 @media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
   .site-container {
     width: min(var(--container), calc(100% - 24px));
   }
