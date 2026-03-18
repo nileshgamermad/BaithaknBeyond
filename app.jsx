@@ -144,6 +144,7 @@ function App() {
   const [modalStoryId, setModalStoryId] = useState("");
   const [planner, setPlanner] = useState({ mood: "food", time: "morning" });
   const [searchTerm, setSearchTerm] = useState("");
+  const [logoSrc, setLogoSrc] = useState("logo.png");
   const [theme, setTheme] = useState(() => {
     try {
       return localStorage.getItem("baithak-theme") || "light";
@@ -185,6 +186,59 @@ function App() {
       localStorage.setItem("baithak-theme", theme);
     } catch {}
   }, [theme]);
+
+  useEffect(() => {
+    let isCancelled = false;
+    const sourceImage = new Image();
+
+    sourceImage.onload = () => {
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        return;
+      }
+
+      canvas.width = sourceImage.naturalWidth;
+      canvas.height = sourceImage.naturalHeight;
+      context.drawImage(sourceImage, 0, 0);
+
+      const frame = context.getImageData(0, 0, canvas.width, canvas.height);
+      const { data } = frame;
+
+      for (let index = 0; index < data.length; index += 4) {
+        const minChannel = Math.min(data[index], data[index + 1], data[index + 2]);
+
+        if (minChannel >= 245) {
+          data[index + 3] = 0;
+          continue;
+        }
+
+        if (minChannel >= 220) {
+          const alphaScale = (245 - minChannel) / 25;
+          data[index + 3] = Math.round(data[index + 3] * alphaScale);
+        }
+      }
+
+      context.putImageData(frame, 0, 0);
+
+      if (!isCancelled) {
+        setLogoSrc(canvas.toDataURL("image/png"));
+      }
+    };
+
+    sourceImage.onerror = () => {
+      if (!isCancelled) {
+        setLogoSrc("logo.png");
+      }
+    };
+
+    sourceImage.src = "logo.png";
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     document.body.classList.toggle("modal-open", Boolean(modalStoryId));
@@ -233,7 +287,7 @@ function App() {
           <div className="hero-backdrop"></div>
           <div className="container site-container intro">
             <div className="eyebrow-pill">Digital baithak for culture, food, and local travel</div>
-            <img className="site-logo" src="logo.png" alt="Baithak and Beyond logo" />
+            <img className="site-logo" src={logoSrc} alt="Baithak and Beyond logo" />
             <h1>Prayagraj stories with a warmer, more modern home online.</h1>
             <p className="brand-kicker">
               Browse heritage notes, food trails, and street-level city guides with immersive cards,
