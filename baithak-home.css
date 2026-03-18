@@ -749,9 +749,6 @@ body[data-theme="dark"] .search-shell {
 }
 
 .theme-switch {
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
   z-index: 15;
   display: inline-flex;
   align-items: center;
@@ -764,6 +761,12 @@ body[data-theme="dark"] .search-shell {
   color: var(--heading);
   font-size: 0.88rem;
   font-weight: 800;
+}
+
+.dark-toggle {
+  position: absolute;
+  right: 20px;
+  top: 20px;
 }
 
 .theme-switch-track {
@@ -924,9 +927,9 @@ body[data-theme="dark"] .search-shell {
     min-height: 320px;
   }
 
-  .theme-switch {
+  .dark-toggle {
     right: 12px;
-    bottom: 12px;
+    top: 12px;
   }
 }
 
