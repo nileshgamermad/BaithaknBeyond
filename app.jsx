@@ -1,4 +1,4 @@
-const { useEffect, useMemo, useState } = React;
+const { useEffect, useLayoutEffect, useMemo, useRef, useState } = React;
 
 const sections = [
   { id: "home", label: "Home" },
@@ -144,6 +144,9 @@ function App() {
   const [modalStoryId, setModalStoryId] = useState("");
   const [planner, setPlanner] = useState({ mood: "food", time: "morning" });
   const [searchTerm, setSearchTerm] = useState("");
+  const [topNavMetrics, setTopNavMetrics] = useState(null);
+  const topNavAnchorRef = useRef(null);
+  const topNavRef = useRef(null);
   const [theme, setTheme] = useState(() => {
     try {
       return localStorage.getItem("baithak-theme") || "light";
@@ -190,6 +193,56 @@ function App() {
     document.body.classList.toggle("modal-open", Boolean(modalStoryId));
     return () => document.body.classList.remove("modal-open");
   }, [modalStoryId]);
+
+  useLayoutEffect(() => {
+    let frameId = 0;
+
+    const measureTopNav = () => {
+      const anchorNode = topNavAnchorRef.current;
+      const navNode = topNavRef.current;
+
+      if (!anchorNode || !navNode) {
+        return;
+      }
+
+      const nextMetrics = {
+        top: anchorNode.getBoundingClientRect().top,
+        height: navNode.getBoundingClientRect().height,
+      };
+
+      setTopNavMetrics((current) => {
+        if (
+          current &&
+          Math.abs(current.top - nextMetrics.top) < 1 &&
+          Math.abs(current.height - nextMetrics.height) < 1
+        ) {
+          return current;
+        }
+
+        return nextMetrics;
+      });
+    };
+
+    const scheduleTopNavMeasure = () => {
+      window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(measureTopNav);
+    };
+
+    scheduleTopNavMeasure();
+    window.addEventListener("load", scheduleTopNavMeasure);
+    window.addEventListener("resize", scheduleTopNavMeasure);
+
+    const fontsReady = document.fonts?.ready;
+    if (fontsReady) {
+      fontsReady.then(scheduleTopNavMeasure).catch(() => {});
+    }
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener("load", scheduleTopNavMeasure);
+      window.removeEventListener("resize", scheduleTopNavMeasure);
+    };
+  }, []);
 
   const filteredStories = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
@@ -259,18 +312,31 @@ function App() {
           </div>
         </header>
 
-        <nav className="container site-container top-nav glass-panel" aria-label="Primary">
-          {sections.map((section) => (
-            <button
-              key={section.id}
-              type="button"
-              className={`nav-link ${activeSection === section.id ? "active" : ""}`}
-              onClick={() => jumpToSection(section.id)}
-            >
-              {section.label}
-            </button>
-          ))}
-        </nav>
+        <div
+          ref={topNavAnchorRef}
+          className="top-nav-anchor"
+          style={topNavMetrics ? { height: `${topNavMetrics.height}px` } : undefined}
+        >
+          <nav
+            ref={topNavRef}
+            className={`container site-container top-nav glass-panel ${
+              topNavMetrics ? "is-fixed" : ""
+            }`}
+            style={topNavMetrics ? { top: `${topNavMetrics.top}px` } : undefined}
+            aria-label="Primary"
+          >
+            {sections.map((section) => (
+              <button
+                key={section.id}
+                type="button"
+                className={`nav-link ${activeSection === section.id ? "active" : ""}`}
+                onClick={() => jumpToSection(section.id)}
+              >
+                {section.label}
+              </button>
+            ))}
+          </nav>
+        </div>
 
         <main className="container site-container page-content">
           <section className="section-stack" id="stories">
