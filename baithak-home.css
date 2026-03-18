@@ -129,7 +129,14 @@ strong {
 .hero-header {
   position: relative;
   overflow: hidden;
-  padding: 38px 0 26px;
+  padding: 96px 0 26px;
+}
+
+#stories,
+#planner,
+#map,
+#about {
+  scroll-margin-top: 80px;
 }
 
 .hero-backdrop {
@@ -235,16 +242,19 @@ body[data-theme="dark"] .search-shell {
 }
 
 .top-nav {
-  position: relative;
-  z-index: 5;
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 10px;
   padding: 12px;
   border-radius: var(--radius-xl);
+  width: min(var(--container), calc(100% - 40px));
 }
 
 .nav-link {
@@ -748,24 +758,22 @@ body[data-theme="dark"] .search-shell {
 }
 
 .theme-switch {
-  z-index: 15;
+  position: fixed;
+  top: 16px;
+  right: 20px;
+  z-index: 51;
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+  gap: 10px;
+  padding: 10px 14px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface-strong);
   box-shadow: var(--shadow-soft);
   color: var(--heading);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 800;
-}
-
-.dark-toggle {
-  position: absolute;
-  right: 20px;
-  top: 20px;
+  white-space: nowrap;
 }
 
 .theme-switch-track {
@@ -926,7 +934,7 @@ body[data-theme="dark"] .search-shell {
     min-height: 320px;
   }
 
-  .dark-toggle {
+  .theme-switch {
     right: 12px;
     top: 12px;
   }
