@@ -145,7 +145,7 @@ function App() {
   const [planner, setPlanner] = useState({ mood: "food", time: "morning" });
   const [searchTerm, setSearchTerm] = useState("");
   const [topNavMetrics, setTopNavMetrics] = useState(null);
-  const topNavAnchorRef = useRef(null);
+  const topNavShellRef = useRef(null);
   const topNavRef = useRef(null);
   const [theme, setTheme] = useState(() => {
     try {
@@ -198,15 +198,15 @@ function App() {
     let frameId = 0;
 
     const measureTopNav = () => {
-      const anchorNode = topNavAnchorRef.current;
+      const shellNode = topNavShellRef.current;
       const navNode = topNavRef.current;
 
-      if (!anchorNode || !navNode) {
+      if (!shellNode || !navNode) {
         return;
       }
 
       const nextMetrics = {
-        top: anchorNode.getBoundingClientRect().top,
+        top: shellNode.getBoundingClientRect().top - 18,
         height: navNode.getBoundingClientRect().height,
       };
 
@@ -313,8 +313,8 @@ function App() {
         </header>
 
         <div
-          ref={topNavAnchorRef}
-          className="top-nav-anchor"
+          ref={topNavShellRef}
+          className="top-nav-shell"
           style={topNavMetrics ? { height: `${topNavMetrics.height}px` } : undefined}
         >
           <nav
