@@ -53,7 +53,7 @@ body {
   min-height: 100vh;
   font-family: "Manrope", "Segoe UI", sans-serif;
   color: var(--text);
-  overflow-x: hidden;
+  overflow-x: clip;
   background:
     radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.45), transparent 26%),
     radial-gradient(circle at 88% 10%, rgba(23, 72, 89, 0.16), transparent 24%),
@@ -129,7 +129,7 @@ strong {
 .hero-header {
   position: relative;
   overflow: hidden;
-  padding: 96px 0 26px;
+  padding: 38px 0 26px;
 }
 
 #stories,
@@ -242,10 +242,8 @@ body[data-theme="dark"] .search-shell {
 }
 
 .top-nav {
-  position: fixed;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
+  position: sticky;
+  top: 0;
   z-index: 50;
   display: flex;
   align-items: center;
@@ -254,7 +252,6 @@ body[data-theme="dark"] .search-shell {
   gap: 10px;
   padding: 12px;
   border-radius: var(--radius-xl);
-  width: min(var(--container), calc(100% - 40px));
 }
 
 .nav-link {
