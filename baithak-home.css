@@ -235,15 +235,19 @@ body[data-theme="dark"] .search-shell {
 }
 
 .top-nav {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: -18px;
+  width: fit-content;
+  max-width: min(var(--container), calc(100% - 120px));
+  margin-top: 0;
   padding: 12px;
   border-radius: var(--radius-xl);
 }
@@ -877,6 +881,11 @@ body[data-theme="dark"] .search-shell {
 }
 
 @media (max-width: 768px) {
+  .top-nav {
+    top: 64px;
+    max-width: calc(100% - 24px);
+  }
+
   body {
     padding: 10px;
   }
