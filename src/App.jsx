@@ -56,39 +56,46 @@ export default function App() {
     let isCancelled = false;
     const sourceImage = new Image();
 
+    sourceImage.crossOrigin = 'anonymous';
     sourceImage.onload = () => {
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
+      try {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
 
-      if (!context) {
-        return;
-      }
-
-      canvas.width = sourceImage.naturalWidth;
-      canvas.height = sourceImage.naturalHeight;
-      context.drawImage(sourceImage, 0, 0);
-
-      const frame = context.getImageData(0, 0, canvas.width, canvas.height);
-      const { data } = frame;
-
-      for (let index = 0; index < data.length; index += 4) {
-        const minChannel = Math.min(data[index], data[index + 1], data[index + 2]);
-
-        if (minChannel >= 245) {
-          data[index + 3] = 0;
-          continue;
+        if (!context) {
+          return;
         }
 
-        if (minChannel >= 220) {
-          const alphaScale = (245 - minChannel) / 25;
-          data[index + 3] = Math.round(data[index + 3] * alphaScale);
+        canvas.width = sourceImage.naturalWidth;
+        canvas.height = sourceImage.naturalHeight;
+        context.drawImage(sourceImage, 0, 0);
+
+        const frame = context.getImageData(0, 0, canvas.width, canvas.height);
+        const { data } = frame;
+
+        for (let index = 0; index < data.length; index += 4) {
+          const minChannel = Math.min(data[index], data[index + 1], data[index + 2]);
+
+          if (minChannel >= 245) {
+            data[index + 3] = 0;
+            continue;
+          }
+
+          if (minChannel >= 220) {
+            const alphaScale = (245 - minChannel) / 25;
+            data[index + 3] = Math.round(data[index + 3] * alphaScale);
+          }
         }
-      }
 
-      context.putImageData(frame, 0, 0);
+        context.putImageData(frame, 0, 0);
 
-      if (!isCancelled) {
-        setLogoSrc(canvas.toDataURL("image/png"));
+        if (!isCancelled) {
+          setLogoSrc(canvas.toDataURL("image/png"));
+        }
+      } catch {
+        if (!isCancelled) {
+          setLogoSrc(logoDefault);
+        }
       }
     };
 
