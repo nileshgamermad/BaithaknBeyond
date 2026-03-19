@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import logoImg from './assets/logo.png';
 import { sections } from './data/sections';
 import { stories } from './data/stories';
 import { plannerOptions, plannerSuggestions } from './data/planner';
@@ -22,7 +23,7 @@ export default function App() {
   const [modalStoryId, setModalStoryId] = useState('');
   const [planner, setPlanner] = useState({ mood: 'food', time: 'morning' });
   const [searchTerm, setSearchTerm] = useState('');
-  const [logoSrc, setLogoSrc] = useState('logo.png');
+  const [logoSrc, setLogoSrc] = useState(logoImg);
   const [theme, setTheme] = useState(() => {
     try {
       return localStorage.getItem('baithak-theme') || 'light';
@@ -90,10 +91,10 @@ export default function App() {
     };
 
     sourceImage.onerror = () => {
-      if (!isCancelled) setLogoSrc('logo.png');
+      if (!isCancelled) setLogoSrc(logoImg);
     };
 
-    sourceImage.src = 'logo.png';
+    sourceImage.src = logoImg;
     return () => { isCancelled = true; };
   }, []);
 
