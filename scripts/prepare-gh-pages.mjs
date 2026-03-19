@@ -8,6 +8,7 @@ const configPath = path.join(rootDir, "site.config.json");
 const excludedNames = new Set([
   ".git",
   ".github",
+  ".claude",
   "dist",
   "node_modules",
   "scripts",
