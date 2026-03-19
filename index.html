@@ -531,16 +531,15 @@ function App() {
                 </div>
                 <div className="recent-posts-list" aria-label="Recent posts">
                   {stories.map((story) => (
-                    <button
+                    <a
                       key={story.id}
-                      type="button"
+                      href={`posts/${story.slug}`}
                       className={`recent-post-link ${selectedStoryId === story.id ? "active" : ""}`}
-                      onClick={() => setSelectedStoryId(story.id)}
                     >
                       <span className="recent-post-category">{story.categoryLabel}</span>
                       <strong>{story.title}</strong>
                       <span>{story.location}</span>
-                    </button>
+                    </a>
                   ))}
                 </div>
               </div>
