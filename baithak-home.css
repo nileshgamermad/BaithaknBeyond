@@ -623,6 +623,8 @@ body[data-theme="dark"] .search-shell {
   border: 1px solid var(--line);
   border-radius: 20px;
   background: var(--surface-strong);
+  text-decoration: none;
+  color: inherit;
 }
 
 .recent-post-link.active {
