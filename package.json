@@ -2,12 +2,19 @@
   "name": "baithakn-beyond",
   "private": true,
   "version": "1.0.0",
-  "description": "Static site deployment for Baithak & Beyond using GitHub Pages.",
+  "description": "Baithak & Beyond — cultural travel blog for Prayagraj.",
+  "type": "module",
   "scripts": {
-    "build": "node scripts/prepare-gh-pages.mjs",
-    "deploy": "npm run build && gh-pages -d dist"
+    "dev": "vite",
+    "build": "vite build && node scripts/post-build.mjs",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "gh-pages": "^6.3.0"
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.0.0"
   }
 }
