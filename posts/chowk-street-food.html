@@ -74,6 +74,7 @@
               title="Map of Chowk area"
               src="https://www.google.com/maps?q=25.438,81.832&z=16&output=embed"
               loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
             ></iframe>
           </div>
           <div class="cta-row">
@@ -88,21 +89,6 @@
     <span class="switch-track"><span class="switch-thumb"></span></span>
     <span id="themeLabel">Dark mode</span>
   </button>
-  <script>
-    (function () {
-      const key = "baithak-theme";
-      const button = document.getElementById("themeSwitch");
-      const label = document.getElementById("themeLabel");
-      const current = localStorage.getItem(key) || "light";
-      document.body.dataset.theme = current;
-      label.textContent = current === "light" ? "Dark mode" : "Light mode";
-      button.addEventListener("click", function () {
-        const next = document.body.dataset.theme === "dark" ? "light" : "dark";
-        document.body.dataset.theme = next;
-        localStorage.setItem(key, next);
-        label.textContent = next === "light" ? "Dark mode" : "Light mode";
-      });
-    })();
-  </script>
+  <script src="theme.js"></script>
 </body>
 </html>
