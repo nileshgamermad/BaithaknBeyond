@@ -1,6 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import logoDefault from './assets/logo.png';
 import { sections, stories, plannerOptions, plannerSuggestions, mapStops } from './data/index.js';
+
+const ease = [0.22, 1, 0.36, 1];
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 28 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.65, ease } },
+};
+
+const stagger = {
+  hidden: {},
+  show:   { transition: { staggerChildren: 0.1 } },
+};
 
 function highlight(text, query) {
   if (!query) return text;
@@ -24,19 +37,9 @@ export default function App() {
   const [planner, setPlanner] = useState({ mood: "food", time: "morning" });
   const [searchTerm, setSearchTerm] = useState("");
   const [logoSrc, setLogoSrc] = useState(logoDefault);
-  const [theme, setTheme] = useState(() => {
-    try {
-      return localStorage.getItem("baithak-theme") || "light";
-    } catch {
-      return "light";
-    }
-  });
   const [bookmarks, setBookmarks] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("baithak-bookmarks") || "[]");
-    } catch {
-      return [];
-    }
+    try { return JSON.parse(localStorage.getItem("baithak-bookmarks") || "[]"); }
+    catch { return []; }
   });
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -50,26 +53,18 @@ export default function App() {
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
-          .filter((entry) => entry.isIntersecting)
+          .filter((e) => e.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
         if (visible) setActiveSection(visible.target.id);
       },
       { rootMargin: "-25% 0px -45% 0px", threshold: [0.2, 0.4, 0.6] }
     );
     sections.forEach((s) => {
-      const node = document.getElementById(s.id);
-      if (node) observer.observe(node);
+      const n = document.getElementById(s.id);
+      if (n) observer.observe(n);
     });
     return () => observer.disconnect();
   }, []);
-
-  // Theme persistence
-  useEffect(() => {
-    document.body.dataset.theme = theme;
-    try {
-      localStorage.setItem("baithak-theme", theme);
-    } catch {}
-  }, [theme]);
 
   // Logo white-pixel removal
   useEffect(() => {
@@ -108,16 +103,14 @@ export default function App() {
     return () => document.body.classList.remove("modal-open");
   }, [modalStoryId]);
 
-  // Scroll: nav shrink + back to top
+  // Scroll: back to top
   useEffect(() => {
-    const handle = () => {
-      setShowBackToTop(window.scrollY > 400);
-    };
+    const handle = () => setShowBackToTop(window.scrollY > 400);
     window.addEventListener("scroll", handle, { passive: true });
     return () => window.removeEventListener("scroll", handle);
   }, []);
 
-  // Skeleton loading
+  // Skeleton
   useEffect(() => {
     const t = setTimeout(() => setIsLoading(false), 700);
     return () => clearTimeout(t);
@@ -125,12 +118,8 @@ export default function App() {
 
   // Persist bookmarks
   useEffect(() => {
-    try {
-      localStorage.setItem("baithak-bookmarks", JSON.stringify(bookmarks));
-    } catch {}
+    try { localStorage.setItem("baithak-bookmarks", JSON.stringify(bookmarks)); } catch {}
   }, [bookmarks]);
-
-  const cardsRef = useRef(null);
 
   const allTags = useMemo(() => {
     const set = new Set();
@@ -149,37 +138,14 @@ export default function App() {
       const matchesSearch =
         !query ||
         [story.title, story.summary, story.detail, story.location, story.categoryLabel]
-          .join(" ")
-          .toLowerCase()
-          .includes(query);
+          .join(" ").toLowerCase().includes(query);
       return matchesFilter && matchesTag && matchesSearch;
     });
   }, [activeFilter, searchTerm, activeTag, bookmarks]);
 
-  // Card scroll fade-in
-  useEffect(() => {
-    if (isLoading) return;
-    const parent = cardsRef.current;
-    if (!parent) return;
-    const cards = parent.querySelectorAll('.story-card');
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('is-visible');
-            observer.unobserve(e.target);
-          }
-        });
-      },
-      { threshold: 0.08 }
-    );
-    cards.forEach((card) => observer.observe(card));
-    return () => observer.disconnect();
-  }, [filteredStories, isLoading]);
-
   const selectedStory = stories.find((s) => s.id === selectedStoryId) ?? stories[0];
-  const modalStory = stories.find((s) => s.id === modalStoryId) ?? selectedStory;
-  const plannerKey = `${planner.mood}-${planner.time}`;
+  const modalStory   = stories.find((s) => s.id === modalStoryId)   ?? selectedStory;
+  const plannerKey        = `${planner.mood}-${planner.time}`;
   const plannerSuggestion = plannerSuggestions[plannerKey];
   const q = searchTerm.trim();
 
@@ -216,20 +182,44 @@ export default function App() {
   return (
     <>
       <div className={`page-shell ${modalStoryId ? "is-blurred" : ""}`}>
+
+        {/* ─── HERO ─── */}
         <header className="hero-header" id="home">
-          <div className="hero-backdrop"></div>
-          <div className="container site-container intro">
-            <div className="eyebrow-pill">Digital baithak for culture, food, and local travel</div>
-            <img className="site-logo" src={logoSrc} alt="Baithak and Beyond logo" />
-            <h1>Prayagraj stories with a warmer, more modern home online.</h1>
-            <p className="brand-kicker">
-              Browse heritage notes, food trails, and street-level city guides with immersive cards,
-              quick previews, and full blog pages.
-            </p>
-            <div className="hero-toolbar glass-panel">
+          <div className="hero-backdrop" />
+          <div className="hero-orb orb-purple" />
+          <div className="hero-orb orb-blue" />
+          <div className="hero-orb orb-gold" />
+
+          <motion.div
+            className="container site-container intro"
+            variants={stagger}
+            initial="hidden"
+            animate="show"
+          >
+            <motion.div variants={fadeUp} className="eyebrow-pill">
+              Digital baithak for culture, food, and local travel
+            </motion.div>
+
+            <motion.img
+              variants={fadeUp}
+              className="site-logo"
+              src={logoSrc}
+              alt="Baithak and Beyond logo"
+            />
+
+            <motion.h1 variants={fadeUp}>
+              Prayagraj stories with a warmer, more modern home online.
+            </motion.h1>
+
+            <motion.p variants={fadeUp} className="brand-kicker">
+              Browse heritage notes, food trails, and street-level city guides with immersive
+              cards, quick previews, and full blog pages.
+            </motion.p>
+
+            <motion.div variants={fadeUp} className="hero-toolbar glass-panel">
               <label className="search-shell" aria-label="Search posts">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M10.5 3a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Zm9.2 14.8 1.4 1.4-3.4-3.4 1.4-1.4 0.6 0.6Z"></path>
+                  <path d="M10.5 3a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Zm9.2 14.8 1.4 1.4-3.4-3.4 1.4-1.4 0.6 0.6Z" />
                 </svg>
                 <input
                   type="search"
@@ -238,29 +228,36 @@ export default function App() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </label>
-              <button className="hero-cta" type="button" onClick={() => jumpToSection("stories")}>
+              <motion.button
+                className="hero-cta"
+                type="button"
+                onClick={() => jumpToSection("stories")}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 Explore Stories
-              </button>
-            </div>
-          </div>
+              </motion.button>
+            </motion.div>
+          </motion.div>
         </header>
 
-        <nav
-          className="container site-container top-nav glass-panel"
-          aria-label="Primary"
-        >
+        {/* ─── NAV ─── */}
+        <nav className="container site-container top-nav glass-panel" aria-label="Primary">
           <div className="nav-links">
             {sections.map((section) => (
-              <button
+              <motion.button
                 key={section.id}
                 type="button"
                 className={`nav-link ${activeSection === section.id ? "active" : ""}`}
                 onClick={() => jumpToSection(section.id)}
+                whileHover={{ scale: 1.07 }}
+                whileTap={{ scale: 0.93 }}
               >
                 {section.label}
-              </button>
+              </motion.button>
             ))}
           </div>
+
           <button
             type="button"
             className={`hamburger ${menuOpen ? "is-open" : ""}`}
@@ -268,57 +265,78 @@ export default function App() {
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((o) => !o)}
           >
-            <span></span>
-            <span></span>
-            <span></span>
+            <span /><span /><span />
           </button>
-          {menuOpen && (
-            <div className="mobile-menu glass-panel">
-              {sections.map((section) => (
-                <button
-                  key={section.id}
-                  type="button"
-                  className={`mobile-nav-link ${activeSection === section.id ? "active" : ""}`}
-                  onClick={() => jumpToSection(section.id)}
-                >
-                  {section.label}
-                </button>
-              ))}
-            </div>
-          )}
+
+          <AnimatePresence>
+            {menuOpen && (
+              <motion.div
+                className="mobile-menu glass-panel"
+                initial={{ opacity: 0, y: -10, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.96 }}
+                transition={{ duration: 0.2, ease }}
+              >
+                {sections.map((section) => (
+                  <button
+                    key={section.id}
+                    type="button"
+                    className={`mobile-nav-link ${activeSection === section.id ? "active" : ""}`}
+                    onClick={() => jumpToSection(section.id)}
+                  >
+                    {section.label}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </nav>
 
+        {/* ─── MAIN ─── */}
         <main className="container site-container page-content">
-          <section className="section-stack" id="stories">
-            <div className="section-heading">
-              <div>
-                <p className="section-kicker">Featured journal</p>
-              </div>
-            </div>
 
-            <div className="panel-row">
+          {/* Stories */}
+          <section className="section-stack" id="stories">
+            <motion.div
+              className="section-heading"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, ease }}
+            >
+              <div><p className="section-kicker">Featured journal</p></div>
+            </motion.div>
+
+            <motion.div
+              className="panel-row"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
               <div className="filter-row" aria-label="Story filters">
                 {[
-                  { value: "all", label: "All Stories" },
-                  { value: "history", label: "History" },
-                  { value: "food", label: "Food" },
+                  { value: "all",        label: "All Stories" },
+                  { value: "history",    label: "History" },
+                  { value: "food",       label: "Food" },
                   { value: "bookmarked", label: `Saved (${bookmarks.length})` },
                 ].map((filter) => (
-                  <button
+                  <motion.button
                     key={filter.value}
                     type="button"
                     className={`filter-chip ${activeFilter === filter.value ? "active" : ""}`}
                     onClick={() => { setActiveFilter(filter.value); setActiveTag(""); }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.94 }}
                   >
                     {filter.label}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
               <p className="result-copy">
-                {filteredStories.length} post{filteredStories.length === 1 ? "" : "s"} matching your
-                view
+                {filteredStories.length} post{filteredStories.length === 1 ? "" : "s"} matching your view
               </p>
-            </div>
+            </motion.div>
 
             {allTags.length > 0 && (
               <div className="tag-row" aria-label="Tag filters">
@@ -342,26 +360,32 @@ export default function App() {
               </div>
             )}
 
-            <div className="story-grid row g-4" ref={cardsRef}>
+            <div className="story-grid row g-4">
               {isLoading
                 ? Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="col-12 col-md-6">
                       <div className="story-card skeleton-card glass-panel">
-                        <div className="skeleton skeleton-image"></div>
+                        <div className="skeleton skeleton-image" />
                         <div className="story-copy">
-                          <div className="skeleton skeleton-line short"></div>
-                          <div className="skeleton skeleton-line"></div>
-                          <div className="skeleton skeleton-line medium"></div>
+                          <div className="skeleton skeleton-line short" />
+                          <div className="skeleton skeleton-line" />
+                          <div className="skeleton skeleton-line medium" />
                         </div>
                       </div>
                     </div>
                   ))
-                : filteredStories.map((story) => (
-                    <div key={story.id} className="col-12 col-md-6">
-                      <article
-                        className={`story-card glass-panel ${
-                          selectedStoryId === story.id ? "selected" : ""
-                        }`}
+                : filteredStories.map((story, i) => (
+                    <motion.div
+                      key={story.id}
+                      className="col-12 col-md-6"
+                      initial={{ opacity: 0, y: 40 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-60px" }}
+                      transition={{ duration: 0.65, delay: i * 0.1, ease }}
+                    >
+                      <motion.article
+                        className={`story-card glass-panel ${selectedStoryId === story.id ? "selected" : ""}`}
+                        whileHover={{ y: -10, transition: { duration: 0.3, ease } }}
                       >
                         <div className="story-media">
                           <img src={story.image} alt={story.alt} />
@@ -369,21 +393,20 @@ export default function App() {
                             <span className="story-tag">{story.categoryLabel}</span>
                             <div className="badge-right">
                               <span className="read-pill">{story.readTime}</span>
-                              <button
+                              <motion.button
                                 type="button"
                                 className={`bookmark-btn ${bookmarks.includes(story.id) ? "bookmarked" : ""}`}
-                                aria-label={
-                                  bookmarks.includes(story.id)
-                                    ? "Remove bookmark"
-                                    : "Bookmark this story"
-                                }
+                                aria-label={bookmarks.includes(story.id) ? "Remove bookmark" : "Bookmark"}
                                 onClick={() => toggleBookmark(story.id)}
+                                whileHover={{ scale: 1.22 }}
+                                whileTap={{ scale: 0.85 }}
                               >
                                 {bookmarks.includes(story.id) ? "★" : "☆"}
-                              </button>
+                              </motion.button>
                             </div>
                           </div>
                         </div>
+
                         <div className="story-copy">
                           <p className="story-location">{story.location}</p>
                           <h3>{highlight(story.title, q)}</h3>
@@ -403,68 +426,93 @@ export default function App() {
                             </div>
                           )}
                           <div className="story-actions">
-                            <button
+                            <motion.button
                               type="button"
                               className={`card-button ${story.accent}`}
                               onClick={() => openStory(story.id)}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
                             >
                               Quick View
-                            </button>
+                            </motion.button>
                             <a className="ghost-link" href={`posts/${story.slug}`}>
                               Read full page
                             </a>
                           </div>
                         </div>
-                      </article>
-                    </div>
+                      </motion.article>
+                    </motion.div>
                   ))}
             </div>
 
             {!isLoading && !filteredStories.length && (
-              <div className="empty-state glass-panel">
+              <motion.div
+                className="empty-state glass-panel"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, ease }}
+              >
                 <h3>No posts match that search yet.</h3>
                 <p>Try searching for a landmark, a food spot, or switch back to all stories.</p>
-              </div>
+              </motion.div>
             )}
           </section>
 
+          {/* Planner + Spotlight */}
           <section className="content-with-sidebar row g-4 align-items-start" id="planner">
             <div className="col-12 col-xl-8">
               <section className="interactive-panel row g-4">
                 <div className="story-spotlight col-12 col-lg-7">
-                  <div className="section-heading">
+                  <motion.div
+                    className="section-heading"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, ease }}
+                  >
                     <div>
                       <p className="section-kicker">Spotlight</p>
                       <h2>Selected story card</h2>
                     </div>
-                  </div>
-                  <div className="spotlight-card glass-panel">
+                  </motion.div>
+
+                  <motion.div
+                    className="spotlight-card glass-panel"
+                    initial={{ opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.65, delay: 0.1, ease }}
+                  >
                     <div className="spotlight-copy">
                       <p className="discover-label">{selectedStory.location}</p>
                       <h2>{selectedStory.title}</h2>
-                      <img
-                        className="spotlight-image"
-                        src={selectedStory.image}
-                        alt={selectedStory.alt}
-                      />
+                      <img className="spotlight-image" src={selectedStory.image} alt={selectedStory.alt} />
                       <p>{selectedStory.detail}</p>
                       <div className="spotlight-actions">
-                        <button
+                        <motion.button
                           type="button"
                           className={`card-button ${selectedStory.accent}`}
                           onClick={() => openStory(selectedStory.id)}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                         >
                           Open card view
-                        </button>
+                        </motion.button>
                         <a className="ghost-link" href={`posts/${selectedStory.slug}`}>
                           Open blog page
                         </a>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
 
-                <aside className="planner-card glass-panel col-12 col-lg-5">
+                <motion.aside
+                  className="planner-card glass-panel col-12 col-lg-5"
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.65, delay: 0.2, ease }}
+                >
                   <div className="section-heading planner-heading">
                     <div>
                       <p className="section-kicker">Trip switchboard</p>
@@ -478,14 +526,10 @@ export default function App() {
                     <span>Mood</span>
                     <select
                       value={planner.mood}
-                      onChange={(e) =>
-                        setPlanner((c) => ({ ...c, mood: e.target.value }))
-                      }
+                      onChange={(e) => setPlanner((c) => ({ ...c, mood: e.target.value }))}
                     >
-                      {plannerOptions.mood.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
+                      {plannerOptions.mood.map((o) => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
                       ))}
                     </select>
                   </label>
@@ -493,14 +537,10 @@ export default function App() {
                     <span>Time</span>
                     <select
                       value={planner.time}
-                      onChange={(e) =>
-                        setPlanner((c) => ({ ...c, time: e.target.value }))
-                      }
+                      onChange={(e) => setPlanner((c) => ({ ...c, time: e.target.value }))}
                     >
-                      {plannerOptions.time.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
+                      {plannerOptions.time.map((o) => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
                       ))}
                     </select>
                   </label>
@@ -508,12 +548,18 @@ export default function App() {
                     <strong>Suggested Start</strong>
                     <p>{plannerSuggestion}</p>
                   </div>
-                </aside>
+                </motion.aside>
               </section>
             </div>
 
             <aside className="col-12 col-xl-4">
-              <div className="recent-posts-panel glass-panel">
+              <motion.div
+                className="recent-posts-panel glass-panel"
+                initial={{ opacity: 0, x: 24 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.65, ease }}
+              >
                 <div className="section-heading recent-posts-heading">
                   <div>
                     <p className="section-kicker">Browse faster</p>
@@ -533,159 +579,241 @@ export default function App() {
                     </a>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             </aside>
           </section>
 
+          {/* Map */}
           <section className="map-section" id="map">
-            <div className="section-heading">
+            <motion.div
+              className="section-heading"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, ease }}
+            >
               <div>
                 <p className="section-kicker">Real map integration</p>
                 <h2>Map the stories directly into the city.</h2>
               </div>
-            </div>
+            </motion.div>
 
             <div className="map-layout row g-4 align-items-stretch">
-              <div className="col-12 col-lg-8">
+              <motion.div
+                className="col-12 col-lg-8"
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.65, ease }}
+              >
                 <div className="map-frame glass-panel">
                   <iframe
                     title={`Map of ${selectedStory.title}`}
                     src={selectedStory.mapEmbed}
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
-                  ></iframe>
+                  />
                 </div>
-              </div>
+              </motion.div>
+
               <div className="col-12 col-lg-4">
                 <div className="map-card-stack">
-                  {mapStops.map((stop) => (
-                    <a
+                  {mapStops.map((stop, i) => (
+                    <motion.a
                       key={stop.title}
                       className="map-stop-card glass-panel"
                       href={stop.href}
                       target="_blank"
                       rel="noreferrer"
+                      initial={{ opacity: 0, x: 20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: i * 0.1, ease }}
+                      whileHover={{ x: 5 }}
                     >
                       <span className="map-stop-kicker">Google Maps</span>
                       <strong>{stop.title}</strong>
                       <p>{stop.subtitle}</p>
-                    </a>
+                    </motion.a>
                   ))}
                 </div>
               </div>
             </div>
           </section>
 
-          <section className="discover-panel glass-panel" id="about">
+          {/* About */}
+          <motion.section
+            className="discover-panel glass-panel"
+            id="about"
+            initial={{ opacity: 0, y: 32 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, ease }}
+          >
             <div className="discover-copy">
               <p className="discover-label">About the platform</p>
               <h2>Built like a magazine, navigated like a modern landing page.</h2>
               <p>
-                The homepage now supports dark mode, quick-view overlays, separate post pages, live
-                search, and map-driven discovery while keeping the local tone at the center.
+                The homepage supports quick-view overlays, separate post pages, live search, and
+                map-driven discovery while keeping the local tone at the center.
               </p>
             </div>
             <div className="discover-actions">
-              <a className="card-button" href="mailto:hello@baithakandbeyond.com">
+              <motion.a
+                className="card-button"
+                href="mailto:hello@baithakandbeyond.com"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 Contact
-              </a>
+              </motion.a>
               <a className="ghost-link" href="posts/triveni-sangam.html">
                 View sample blog page
               </a>
             </div>
-          </section>
+          </motion.section>
         </main>
 
+        {/* Footer */}
         <footer className="subscribe-bar">
           <div className="container site-container subscribe-inner">
-            <div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, ease }}
+            >
               <p className="section-kicker footer-kicker">Stay in the loop</p>
               <h2>Join the Baithak</h2>
               <p>Subscribe for city stories, seasonal food notes, and travel routes from Prayagraj.</p>
-            </div>
-            {emailSubmitted ? (
-              <div className="subscribe-success">
-                <p>You are in! We will be in touch soon.</p>
-              </div>
-            ) : (
-              <form className="subscribe-form" onSubmit={handleEmailSubmit}>
-                <input
-                  type="email"
-                  placeholder="Your email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <button type="submit" className="subscribe-button">Subscribe</button>
-              </form>
-            )}
+            </motion.div>
+
+            <AnimatePresence mode="wait">
+              {emailSubmitted ? (
+                <motion.div
+                  key="success"
+                  className="subscribe-success"
+                  initial={{ opacity: 0, scale: 0.92 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.92 }}
+                  transition={{ duration: 0.4, ease }}
+                >
+                  <p>You are in! We will be in touch soon.</p>
+                </motion.div>
+              ) : (
+                <motion.form
+                  key="form"
+                  className="subscribe-form"
+                  onSubmit={handleEmailSubmit}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.55, delay: 0.12, ease }}
+                >
+                  <input
+                    type="email"
+                    placeholder="Your email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                  <motion.button
+                    type="submit"
+                    className="subscribe-button"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Subscribe
+                  </motion.button>
+                </motion.form>
+              )}
+            </AnimatePresence>
           </div>
         </footer>
-
-        <button
-          type="button"
-          className="theme-switch"
-          onClick={() => setTheme((c) => (c === "light" ? "dark" : "light"))}
-          aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-        >
-          <span className="theme-switch-track">
-            <span className={`theme-switch-thumb ${theme === "dark" ? "is-dark" : ""}`}></span>
-          </span>
-          <span>{theme === "light" ? "Dark mode" : "Light mode"}</span>
-        </button>
       </div>
 
-      {showBackToTop && (
-        <button
-          type="button"
-          className="back-to-top"
-          onClick={scrollToTop}
-          aria-label="Back to top"
-        >
-          ↑
-        </button>
-      )}
-
-      {modalStoryId && (
-        <div
-          className="story-modal-backdrop"
-          role="presentation"
-          onClick={() => setModalStoryId("")}
-        >
-          <article
-            className="story-modal glass-panel"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="story-modal-title"
-            onClick={(e) => e.stopPropagation()}
+      {/* Back to top */}
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.button
+            type="button"
+            className="back-to-top"
+            onClick={scrollToTop}
+            aria-label="Back to top"
+            initial={{ opacity: 0, scale: 0.7, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.7, y: 10 }}
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.88 }}
+            transition={{ duration: 0.25, ease }}
           >
-            <button
-              type="button"
-              className="modal-close"
-              aria-label="Close quick view"
-              onClick={() => setModalStoryId("")}
+            ↑
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Story modal */}
+      <AnimatePresence>
+        {modalStoryId && (
+          <motion.div
+            className="story-modal-backdrop"
+            role="presentation"
+            onClick={() => setModalStoryId("")}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.28 }}
+          >
+            <motion.article
+              className="story-modal glass-panel"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="story-modal-title"
+              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, scale: 0.88, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.88, y: 24 }}
+              transition={{ duration: 0.38, ease }}
             >
-              ×
-            </button>
-            <img src={modalStory.image} alt={modalStory.alt} />
-            <div className="story-modal-copy">
-              <p className="story-tag">{modalStory.categoryLabel}</p>
-              <h2 id="story-modal-title">{modalStory.title}</h2>
-              <p className="story-location">{modalStory.location}</p>
-              <p>{modalStory.excerpt}</p>
-              <p>{modalStory.detail}</p>
-              <div className="story-actions">
-                <a className={`card-button ${modalStory.accent}`} href={`posts/${modalStory.slug}`}>
-                  Read full story
-                </a>
-                <button type="button" className="ghost-link" onClick={() => setModalStoryId("")}>
-                  Close preview
-                </button>
+              <motion.button
+                type="button"
+                className="modal-close"
+                aria-label="Close quick view"
+                onClick={() => setModalStoryId("")}
+                whileHover={{ scale: 1.12 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                ×
+              </motion.button>
+              <img src={modalStory.image} alt={modalStory.alt} />
+              <div className="story-modal-copy">
+                <p className="story-tag">{modalStory.categoryLabel}</p>
+                <h2 id="story-modal-title">{modalStory.title}</h2>
+                <p className="story-location">{modalStory.location}</p>
+                <p>{modalStory.excerpt}</p>
+                <p>{modalStory.detail}</p>
+                <div className="story-actions">
+                  <motion.a
+                    className={`card-button ${modalStory.accent}`}
+                    href={`posts/${modalStory.slug}`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Read full story
+                  </motion.a>
+                  <button
+                    type="button"
+                    className="ghost-link"
+                    onClick={() => setModalStoryId("")}
+                  >
+                    Close preview
+                  </button>
+                </div>
               </div>
-            </div>
-          </article>
-        </div>
-      )}
+            </motion.article>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
