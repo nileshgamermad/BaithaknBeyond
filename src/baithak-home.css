@@ -984,19 +984,6 @@ body[data-theme="dark"] .search-shell {
   background: rgba(163, 34, 27, 0.62);
 }
 
-/* ─── Sticky shrinking nav ─────────────────────────── */
-.top-nav {
-  position: sticky;
-  top: 12px;
-  z-index: 10;
-  transition: padding 0.3s ease, border-radius 0.3s ease;
-}
-
-.top-nav.nav-scrolled {
-  padding: 8px 14px;
-  border-radius: 20px;
-}
-
 .nav-links {
   display: flex;
   align-items: center;

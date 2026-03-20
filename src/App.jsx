@@ -38,7 +38,6 @@ export default function App() {
       return [];
     }
   });
-  const [navScrolled, setNavScrolled] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -112,7 +111,6 @@ export default function App() {
   // Scroll: nav shrink + back to top
   useEffect(() => {
     const handle = () => {
-      setNavScrolled(window.scrollY > 60);
       setShowBackToTop(window.scrollY > 400);
     };
     window.addEventListener("scroll", handle, { passive: true });
@@ -248,7 +246,7 @@ export default function App() {
         </header>
 
         <nav
-          className={`container site-container top-nav glass-panel ${navScrolled ? "nav-scrolled" : ""}`}
+          className="container site-container top-nav glass-panel"
           aria-label="Primary"
         >
           <div className="nav-links">
