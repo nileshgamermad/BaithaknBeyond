@@ -47,6 +47,16 @@ export default function App() {
   const [emailSubmitted, setEmailSubmitted] = useState(false);
   const [activeTag, setActiveTag] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [theme, setTheme] = useState(() => {
+    try { return localStorage.getItem("baithak-theme") || "light"; }
+    catch { return "light"; }
+  });
+
+  // Theme sync
+  useEffect(() => {
+    document.body.dataset.theme = theme;
+    try { localStorage.setItem("baithak-theme", theme); } catch {}
+  }, [theme]);
 
   // Section intersection observer
   useEffect(() => {
@@ -751,6 +761,19 @@ export default function App() {
           </motion.button>
         )}
       </AnimatePresence>
+
+      {/* Theme toggle */}
+      <button
+        type="button"
+        className="theme-switch"
+        aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+        onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+      >
+        <span className="switch-track">
+          <span className={`switch-thumb${theme === "dark" ? " is-dark" : ""}`} />
+        </span>
+        <span className="theme-label">{theme === "dark" ? "Light mode" : "Dark mode"}</span>
+      </button>
 
       {/* Story modal */}
       <AnimatePresence>
