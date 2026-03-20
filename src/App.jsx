@@ -769,10 +769,10 @@ export default function App() {
         aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
         onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
       >
-        <span className="switch-track">
-          <span className={`switch-thumb${theme === "dark" ? " is-dark" : ""}`} />
+        <span className="theme-switch-track">
+          <span className={`theme-switch-thumb${theme === "dark" ? " is-dark" : ""}`} />
         </span>
-        <span className="theme-label">{theme === "dark" ? "Light mode" : "Dark mode"}</span>
+        <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
       </button>
 
       {/* Story modal */}
