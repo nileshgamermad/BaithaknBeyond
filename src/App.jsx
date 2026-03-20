@@ -1,6 +1,20 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import logoDefault from './assets/logo.png';
 import { sections, stories, plannerOptions, plannerSuggestions, mapStops } from './data/index.js';
+
+function highlight(text, query) {
+  if (!query) return text;
+  const q = query.toLowerCase();
+  const idx = text.toLowerCase().indexOf(q);
+  if (idx === -1) return text;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark className="search-highlight">{text.slice(idx, idx + query.length)}</mark>
+      {text.slice(idx + query.length)}
+    </>
+  );
+}
 
 export default function App() {
   const [activeSection, setActiveSection] = useState("home");
@@ -17,34 +31,40 @@ export default function App() {
       return "light";
     }
   });
+  const [bookmarks, setBookmarks] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("baithak-bookmarks") || "[]");
+    } catch {
+      return [];
+    }
+  });
+  const [navScrolled, setNavScrolled] = useState(false);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailSubmitted, setEmailSubmitted] = useState(false);
+  const [activeTag, setActiveTag] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Section intersection observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-
-        if (visible) {
-          setActiveSection(visible.target.id);
-        }
+        if (visible) setActiveSection(visible.target.id);
       },
-      {
-        rootMargin: "-25% 0px -45% 0px",
-        threshold: [0.2, 0.4, 0.6],
-      }
+      { rootMargin: "-25% 0px -45% 0px", threshold: [0.2, 0.4, 0.6] }
     );
-
-    sections.forEach((section) => {
-      const node = document.getElementById(section.id);
-      if (node) {
-        observer.observe(node);
-      }
+    sections.forEach((s) => {
+      const node = document.getElementById(s.id);
+      if (node) observer.observe(node);
     });
-
     return () => observer.disconnect();
   }, []);
 
+  // Theme persistence
   useEffect(() => {
     document.body.dataset.theme = theme;
     try {
@@ -52,101 +72,148 @@ export default function App() {
     } catch {}
   }, [theme]);
 
+  // Logo white-pixel removal
   useEffect(() => {
-    let isCancelled = false;
-    const sourceImage = new Image();
-
-    sourceImage.crossOrigin = 'anonymous';
-    sourceImage.onload = () => {
+    let cancelled = false;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
       try {
         const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-
-        if (!context) {
-          return;
-        }
-
-        canvas.width = sourceImage.naturalWidth;
-        canvas.height = sourceImage.naturalHeight;
-        context.drawImage(sourceImage, 0, 0);
-
-        const frame = context.getImageData(0, 0, canvas.width, canvas.height);
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        ctx.drawImage(img, 0, 0);
+        const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const { data } = frame;
-
-        for (let index = 0; index < data.length; index += 4) {
-          const minChannel = Math.min(data[index], data[index + 1], data[index + 2]);
-
-          if (minChannel >= 245) {
-            data[index + 3] = 0;
-            continue;
-          }
-
-          if (minChannel >= 220) {
-            const alphaScale = (245 - minChannel) / 25;
-            data[index + 3] = Math.round(data[index + 3] * alphaScale);
-          }
+        for (let i = 0; i < data.length; i += 4) {
+          const min = Math.min(data[i], data[i + 1], data[i + 2]);
+          if (min >= 245) { data[i + 3] = 0; continue; }
+          if (min >= 220) data[i + 3] = Math.round(data[i + 3] * (245 - min) / 25);
         }
-
-        context.putImageData(frame, 0, 0);
-
-        if (!isCancelled) {
-          setLogoSrc(canvas.toDataURL("image/png"));
-        }
+        ctx.putImageData(frame, 0, 0);
+        if (!cancelled) setLogoSrc(canvas.toDataURL("image/png"));
       } catch {
-        if (!isCancelled) {
-          setLogoSrc(logoDefault);
-        }
+        if (!cancelled) setLogoSrc(logoDefault);
       }
     };
-
-    sourceImage.onerror = () => {
-      if (!isCancelled) {
-        setLogoSrc(logoDefault);
-      }
-    };
-
-    sourceImage.src = logoDefault;
-
-    return () => {
-      isCancelled = true;
-    };
+    img.onerror = () => { if (!cancelled) setLogoSrc(logoDefault); };
+    img.src = logoDefault;
+    return () => { cancelled = true; };
   }, []);
 
+  // Modal body lock
   useEffect(() => {
     document.body.classList.toggle("modal-open", Boolean(modalStoryId));
     return () => document.body.classList.remove("modal-open");
   }, [modalStoryId]);
 
+  // Scroll: nav shrink + back to top
+  useEffect(() => {
+    const handle = () => {
+      setNavScrolled(window.scrollY > 60);
+      setShowBackToTop(window.scrollY > 400);
+    };
+    window.addEventListener("scroll", handle, { passive: true });
+    return () => window.removeEventListener("scroll", handle);
+  }, []);
+
+  // Skeleton loading
+  useEffect(() => {
+    const t = setTimeout(() => setIsLoading(false), 700);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Persist bookmarks
+  useEffect(() => {
+    try {
+      localStorage.setItem("baithak-bookmarks", JSON.stringify(bookmarks));
+    } catch {}
+  }, [bookmarks]);
+
+  const cardsRef = useRef(null);
+
+  const allTags = useMemo(() => {
+    const set = new Set();
+    stories.forEach((s) => s.tags?.forEach((t) => set.add(t)));
+    return [...set];
+  }, []);
+
   const filteredStories = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
-
     return stories.filter((story) => {
-      const matchesFilter = activeFilter === "all" || story.category === activeFilter;
+      const matchesFilter =
+        activeFilter === "bookmarked"
+          ? bookmarks.includes(story.id)
+          : activeFilter === "all" || story.category === activeFilter;
+      const matchesTag = !activeTag || story.tags?.includes(activeTag);
       const matchesSearch =
         !query ||
         [story.title, story.summary, story.detail, story.location, story.categoryLabel]
           .join(" ")
           .toLowerCase()
           .includes(query);
-
-      return matchesFilter && matchesSearch;
+      return matchesFilter && matchesTag && matchesSearch;
     });
-  }, [activeFilter, searchTerm]);
+  }, [activeFilter, searchTerm, activeTag, bookmarks]);
 
-  const selectedStory = stories.find((story) => story.id === selectedStoryId) ?? stories[0];
-  const modalStory = stories.find((story) => story.id === modalStoryId) ?? selectedStory;
+  // Card scroll fade-in
+  useEffect(() => {
+    if (isLoading) return;
+    const parent = cardsRef.current;
+    if (!parent) return;
+    const cards = parent.querySelectorAll('.story-card');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add('is-visible');
+            observer.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.08 }
+    );
+    cards.forEach((card) => observer.observe(card));
+    return () => observer.disconnect();
+  }, [filteredStories, isLoading]);
+
+  const selectedStory = stories.find((s) => s.id === selectedStoryId) ?? stories[0];
+  const modalStory = stories.find((s) => s.id === modalStoryId) ?? selectedStory;
   const plannerKey = `${planner.mood}-${planner.time}`;
   const plannerSuggestion = plannerSuggestions[plannerKey];
+  const q = searchTerm.trim();
 
-  const jumpToSection = (sectionId) => {
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    setActiveSection(sectionId);
+  const jumpToSection = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setActiveSection(id);
+    setMenuOpen(false);
   };
 
   const openStory = (storyId) => {
     setSelectedStoryId(storyId);
     setModalStoryId(storyId);
   };
+
+  const toggleBookmark = (storyId) => {
+    setBookmarks((prev) =>
+      prev.includes(storyId) ? prev.filter((id) => id !== storyId) : [...prev, storyId]
+    );
+  };
+
+  const handleEmailSubmit = (e) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    try {
+      const existing = JSON.parse(localStorage.getItem("baithak-subscribers") || "[]");
+      localStorage.setItem("baithak-subscribers", JSON.stringify([...existing, email.trim()]));
+    } catch {}
+    setEmailSubmitted(true);
+    setEmail("");
+  };
+
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
     <>
@@ -161,7 +228,6 @@ export default function App() {
               Browse heritage notes, food trails, and street-level city guides with immersive cards,
               quick previews, and full blog pages.
             </p>
-
             <div className="hero-toolbar glass-panel">
               <label className="search-shell" aria-label="Search posts">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -171,7 +237,7 @@ export default function App() {
                   type="search"
                   placeholder="Search stories, food spots, or landmarks"
                   value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </label>
               <button className="hero-cta" type="button" onClick={() => jumpToSection("stories")}>
@@ -181,17 +247,47 @@ export default function App() {
           </div>
         </header>
 
-        <nav className="container site-container top-nav glass-panel" aria-label="Primary">
-          {sections.map((section) => (
-            <button
-              key={section.id}
-              type="button"
-              className={`nav-link ${activeSection === section.id ? "active" : ""}`}
-              onClick={() => jumpToSection(section.id)}
-            >
-              {section.label}
-            </button>
-          ))}
+        <nav
+          className={`container site-container top-nav glass-panel ${navScrolled ? "nav-scrolled" : ""}`}
+          aria-label="Primary"
+        >
+          <div className="nav-links">
+            {sections.map((section) => (
+              <button
+                key={section.id}
+                type="button"
+                className={`nav-link ${activeSection === section.id ? "active" : ""}`}
+                onClick={() => jumpToSection(section.id)}
+              >
+                {section.label}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            className={`hamburger ${menuOpen ? "is-open" : ""}`}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((o) => !o)}
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          {menuOpen && (
+            <div className="mobile-menu glass-panel">
+              {sections.map((section) => (
+                <button
+                  key={section.id}
+                  type="button"
+                  className={`mobile-nav-link ${activeSection === section.id ? "active" : ""}`}
+                  onClick={() => jumpToSection(section.id)}
+                >
+                  {section.label}
+                </button>
+              ))}
+            </div>
+          )}
         </nav>
 
         <main className="container site-container page-content">
@@ -208,12 +304,13 @@ export default function App() {
                   { value: "all", label: "All Stories" },
                   { value: "history", label: "History" },
                   { value: "food", label: "Food" },
+                  { value: "bookmarked", label: `Saved (${bookmarks.length})` },
                 ].map((filter) => (
                   <button
                     key={filter.value}
                     type="button"
                     className={`filter-chip ${activeFilter === filter.value ? "active" : ""}`}
-                    onClick={() => setActiveFilter(filter.value)}
+                    onClick={() => { setActiveFilter(filter.value); setActiveTag(""); }}
                   >
                     {filter.label}
                   </button>
@@ -225,44 +322,107 @@ export default function App() {
               </p>
             </div>
 
-            <div className="story-grid row g-4">
-              {filteredStories.map((story) => (
-                <div key={story.id} className="col-12 col-md-6">
-                  <article
-                    className={`story-card glass-panel ${
-                      selectedStoryId === story.id ? "selected" : ""
-                    }`}
+            {allTags.length > 0 && (
+              <div className="tag-row" aria-label="Tag filters">
+                <button
+                  type="button"
+                  className={`tag-pill ${!activeTag ? "active" : ""}`}
+                  onClick={() => setActiveTag("")}
+                >
+                  All tags
+                </button>
+                {allTags.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    className={`tag-pill ${activeTag === tag ? "active" : ""}`}
+                    onClick={() => setActiveTag(activeTag === tag ? "" : tag)}
                   >
-                    <div className="story-media">
-                      <img src={story.image} alt={story.alt} />
-                      <div className="story-badge-row">
-                        <span className="story-tag">{story.categoryLabel}</span>
-                        <span className="read-pill">{story.readTime}</span>
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="story-grid row g-4" ref={cardsRef}>
+              {isLoading
+                ? Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="col-12 col-md-6">
+                      <div className="story-card skeleton-card glass-panel">
+                        <div className="skeleton skeleton-image"></div>
+                        <div className="story-copy">
+                          <div className="skeleton skeleton-line short"></div>
+                          <div className="skeleton skeleton-line"></div>
+                          <div className="skeleton skeleton-line medium"></div>
+                        </div>
                       </div>
                     </div>
-                    <div className="story-copy">
-                      <p className="story-location">{story.location}</p>
-                      <h3>{story.title}</h3>
-                      <p>{story.summary}</p>
-                      <div className="story-actions">
-                        <button
-                          type="button"
-                          className={`card-button ${story.accent}`}
-                          onClick={() => openStory(story.id)}
-                        >
-                          Quick View
-                        </button>
-                        <a className="ghost-link" href={`posts/${story.slug}`}>
-                          Read full page
-                        </a>
-                      </div>
+                  ))
+                : filteredStories.map((story) => (
+                    <div key={story.id} className="col-12 col-md-6">
+                      <article
+                        className={`story-card glass-panel ${
+                          selectedStoryId === story.id ? "selected" : ""
+                        }`}
+                      >
+                        <div className="story-media">
+                          <img src={story.image} alt={story.alt} />
+                          <div className="story-badge-row">
+                            <span className="story-tag">{story.categoryLabel}</span>
+                            <div className="badge-right">
+                              <span className="read-pill">{story.readTime}</span>
+                              <button
+                                type="button"
+                                className={`bookmark-btn ${bookmarks.includes(story.id) ? "bookmarked" : ""}`}
+                                aria-label={
+                                  bookmarks.includes(story.id)
+                                    ? "Remove bookmark"
+                                    : "Bookmark this story"
+                                }
+                                onClick={() => toggleBookmark(story.id)}
+                              >
+                                {bookmarks.includes(story.id) ? "★" : "☆"}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="story-copy">
+                          <p className="story-location">{story.location}</p>
+                          <h3>{highlight(story.title, q)}</h3>
+                          <p>{highlight(story.summary, q)}</p>
+                          {story.tags && (
+                            <div className="story-tags">
+                              {story.tags.map((tag) => (
+                                <button
+                                  key={tag}
+                                  type="button"
+                                  className={`tag-chip ${activeTag === tag ? "active" : ""}`}
+                                  onClick={() => setActiveTag(activeTag === tag ? "" : tag)}
+                                >
+                                  {tag}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          <div className="story-actions">
+                            <button
+                              type="button"
+                              className={`card-button ${story.accent}`}
+                              onClick={() => openStory(story.id)}
+                            >
+                              Quick View
+                            </button>
+                            <a className="ghost-link" href={`posts/${story.slug}`}>
+                              Read full page
+                            </a>
+                          </div>
+                        </div>
+                      </article>
                     </div>
-                  </article>
-                </div>
-              ))}
+                  ))}
             </div>
 
-            {!filteredStories.length && (
+            {!isLoading && !filteredStories.length && (
               <div className="empty-state glass-panel">
                 <h3>No posts match that search yet.</h3>
                 <p>Try searching for a landmark, a food spot, or switch back to all stories.</p>
@@ -320,8 +480,8 @@ export default function App() {
                     <span>Mood</span>
                     <select
                       value={planner.mood}
-                      onChange={(event) =>
-                        setPlanner((current) => ({ ...current, mood: event.target.value }))
+                      onChange={(e) =>
+                        setPlanner((c) => ({ ...c, mood: e.target.value }))
                       }
                     >
                       {plannerOptions.mood.map((option) => (
@@ -335,8 +495,8 @@ export default function App() {
                     <span>Time</span>
                     <select
                       value={planner.time}
-                      onChange={(event) =>
-                        setPlanner((current) => ({ ...current, time: event.target.value }))
+                      onChange={(e) =>
+                        setPlanner((c) => ({ ...c, time: e.target.value }))
                       }
                     >
                       {plannerOptions.time.map((option) => (
@@ -445,16 +605,29 @@ export default function App() {
               <h2>Join the Baithak</h2>
               <p>Subscribe for city stories, seasonal food notes, and travel routes from Prayagraj.</p>
             </div>
-            <a className="subscribe-button" href="mailto:hello@baithakandbeyond.com">
-              Subscribe
-            </a>
+            {emailSubmitted ? (
+              <div className="subscribe-success">
+                <p>You are in! We will be in touch soon.</p>
+              </div>
+            ) : (
+              <form className="subscribe-form" onSubmit={handleEmailSubmit}>
+                <input
+                  type="email"
+                  placeholder="Your email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+                <button type="submit" className="subscribe-button">Subscribe</button>
+              </form>
+            )}
           </div>
         </footer>
 
         <button
           type="button"
           className="theme-switch"
-          onClick={() => setTheme((current) => (current === "light" ? "dark" : "light"))}
+          onClick={() => setTheme((c) => (c === "light" ? "dark" : "light"))}
           aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
         >
           <span className="theme-switch-track">
@@ -463,6 +636,17 @@ export default function App() {
           <span>{theme === "light" ? "Dark mode" : "Light mode"}</span>
         </button>
       </div>
+
+      {showBackToTop && (
+        <button
+          type="button"
+          className="back-to-top"
+          onClick={scrollToTop}
+          aria-label="Back to top"
+        >
+          ↑
+        </button>
+      )}
 
       {modalStoryId && (
         <div
@@ -475,7 +659,7 @@ export default function App() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="story-modal-title"
-            onClick={(event) => event.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"

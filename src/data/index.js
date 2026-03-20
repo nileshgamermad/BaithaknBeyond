@@ -25,6 +25,7 @@ export const stories = [
     location: "Triveni Sangam",
     readTime: "6 min read",
     accent: "",
+    tags: ["heritage", "riverside", "spiritual", "sunrise"],
     mapEmbed: "https://www.google.com/maps?q=25.423,81.878&z=15&output=embed",
   },
   {
@@ -44,6 +45,7 @@ export const stories = [
     location: "Allahabad Fort",
     readTime: "5 min read",
     accent: "",
+    tags: ["heritage", "mughal", "architecture", "history"],
     mapEmbed: "https://www.google.com/maps?q=25.429,81.867&z=16&output=embed",
   },
   {
@@ -64,6 +66,7 @@ export const stories = [
     location: "Loknath, Prayagraj",
     readTime: "4 min read",
     accent: "gold",
+    tags: ["food", "breakfast", "street food", "local favourite"],
     mapEmbed: "https://www.google.com/maps?q=25.434,81.829&z=16&output=embed",
   },
   {
@@ -84,6 +87,7 @@ export const stories = [
     location: "Chowk, Prayagraj",
     readTime: "5 min read",
     accent: "gold",
+    tags: ["food", "street food", "chaat", "evening"],
     mapEmbed: "https://www.google.com/maps?q=25.438,81.832&z=16&output=embed",
   },
 ];

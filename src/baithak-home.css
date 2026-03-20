@@ -968,3 +968,404 @@ body[data-theme="dark"] .search-shell {
     padding: 14px;
   }
 }
+
+/* ─── Custom scrollbar ─────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(163, 34, 27, 0.38);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(163, 34, 27, 0.62);
+}
+
+/* ─── Sticky shrinking nav ─────────────────────────── */
+.top-nav {
+  position: sticky;
+  top: 12px;
+  z-index: 10;
+  transition: padding 0.3s ease, border-radius 0.3s ease;
+}
+
+.top-nav.nav-scrolled {
+  padding: 8px 14px;
+  border-radius: 20px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 1;
+}
+
+/* ─── Hamburger menu ───────────────────────────────── */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+}
+
+.hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.hamburger.is-open span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+.hamburger.is-open span:nth-child(2) {
+  opacity: 0;
+}
+.hamburger.is-open span:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
+.mobile-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  z-index: 30;
+}
+
+.mobile-nav-link {
+  padding: 13px 16px;
+  border-radius: 12px;
+  text-align: left;
+  color: var(--text);
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.mobile-nav-link:hover,
+.mobile-nav-link.active {
+  background: rgba(163, 34, 27, 0.12);
+  color: var(--heading);
+}
+
+/* ─── Hero entrance animations ─────────────────────── */
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.intro > * {
+  animation: heroFadeUp 0.72s ease both;
+}
+.intro > *:nth-child(1) { animation-delay: 0.05s; }
+.intro > *:nth-child(2) { animation-delay: 0.18s; }
+.intro > *:nth-child(3) { animation-delay: 0.32s; }
+.intro > *:nth-child(4) { animation-delay: 0.46s; }
+.intro > *:nth-child(5) { animation-delay: 0.6s; }
+
+/* ─── Story card image zoom on hover ───────────────── */
+.story-media {
+  overflow: hidden;
+}
+
+.story-media img {
+  transition: transform 0.45s ease;
+}
+
+.story-card:hover .story-media img {
+  transform: scale(1.07);
+}
+
+/* ─── Scroll fade-in for story cards ───────────────── */
+.story-card {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.story-card.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.story-card.is-visible:hover,
+.story-card.is-visible.selected {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow);
+  border-color: rgba(163, 34, 27, 0.3);
+}
+
+/* ─── Skeleton loading ─────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+
+.skeleton {
+  border-radius: 10px;
+  background: linear-gradient(
+    90deg,
+    var(--bg-deep) 25%,
+    rgba(255, 255, 255, 0.12) 50%,
+    var(--bg-deep) 75%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+.skeleton-image {
+  width: 100%;
+  aspect-ratio: 1.48 / 1;
+  border-radius: 0;
+}
+
+.skeleton-line {
+  height: 14px;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.skeleton-line.short {
+  width: 42%;
+}
+
+.skeleton-line.medium {
+  width: 70%;
+}
+
+.skeleton-card {
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* ─── Search highlight ─────────────────────────────── */
+.search-highlight {
+  background: rgba(217, 156, 31, 0.38);
+  color: var(--heading);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+body[data-theme="dark"] .search-highlight {
+  background: rgba(242, 182, 62, 0.32);
+}
+
+/* ─── Tag row (below filters) ──────────────────────── */
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.tag-pill {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.tag-pill:hover,
+.tag-pill.active {
+  transform: translateY(-2px);
+  background: rgba(23, 72, 89, 0.1);
+  border-color: rgba(23, 72, 89, 0.35);
+  color: var(--teal);
+}
+
+/* ─── Tags on story cards ──────────────────────────── */
+.story-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag-chip {
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.tag-chip:hover,
+.tag-chip.active {
+  background: rgba(23, 72, 89, 0.1);
+  border-color: rgba(23, 72, 89, 0.32);
+  color: var(--teal);
+}
+
+/* ─── Bookmark button ──────────────────────────────── */
+.badge-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bookmark-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(10, 29, 38, 0.65);
+  color: #fff6ed;
+  font-size: 1rem;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
+}
+
+.bookmark-btn:hover {
+  transform: scale(1.14);
+}
+
+.bookmark-btn.bookmarked {
+  background: rgba(163, 34, 27, 0.82);
+  color: #fff9f3;
+}
+
+/* ─── Email subscribe form ─────────────────────────── */
+.subscribe-form {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 280px;
+}
+
+.subscribe-form input {
+  flex: 1;
+  min-width: 180px;
+  padding: 14px 18px;
+  border: 1px solid rgba(255, 241, 226, 0.22);
+  border-radius: 999px;
+  background: rgba(255, 247, 239, 0.1);
+  color: #fff8ef;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.subscribe-form input::placeholder {
+  color: rgba(255, 245, 234, 0.55);
+}
+
+.subscribe-form input:focus {
+  border-color: rgba(255, 241, 226, 0.5);
+}
+
+.subscribe-success {
+  padding: 18px 24px;
+  border: 1px solid rgba(255, 241, 226, 0.22);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 247, 239, 0.1);
+}
+
+.subscribe-success p {
+  margin: 0;
+  color: rgba(255, 245, 234, 0.9);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* ─── Back to top button ───────────────────────────── */
+.back-to-top {
+  position: fixed;
+  right: 20px;
+  bottom: 80px;
+  z-index: 40;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-deep) 100%);
+  box-shadow: 0 8px 24px rgba(123, 19, 15, 0.32);
+  color: #fff9f3;
+  font-size: 1.3rem;
+  line-height: 1;
+  border: 0;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.back-to-top:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(123, 19, 15, 0.42);
+}
+
+/* ─── Mobile responsive additions ─────────────────── */
+@media (max-width: 768px) {
+  .top-nav {
+    justify-content: flex-end;
+    position: relative;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .subscribe-form {
+    flex-direction: column;
+    min-width: unset;
+    width: 100%;
+  }
+
+  .subscribe-form input {
+    width: 100%;
+  }
+
+  .subscribe-button {
+    width: 100%;
+  }
+
+  .tag-row {
+    margin-top: 4px;
+  }
+}
