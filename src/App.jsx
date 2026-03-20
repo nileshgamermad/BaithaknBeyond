@@ -740,6 +740,21 @@ export default function App() {
             </AnimatePresence>
           </div>
         </footer>
+
+        {/* Theme toggle */}
+        <div className="theme-switch-bar">
+          <button
+            type="button"
+            className="theme-switch"
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+          >
+            <span className="theme-switch-track">
+              <span className={`theme-switch-thumb${theme === "dark" ? " is-dark" : ""}`} />
+            </span>
+            <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
+          </button>
+        </div>
       </div>
 
       {/* Back to top */}
@@ -761,19 +776,6 @@ export default function App() {
           </motion.button>
         )}
       </AnimatePresence>
-
-      {/* Theme toggle */}
-      <button
-        type="button"
-        className="theme-switch"
-        aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-        onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
-      >
-        <span className="theme-switch-track">
-          <span className={`theme-switch-thumb${theme === "dark" ? " is-dark" : ""}`} />
-        </span>
-        <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
-      </button>
 
       {/* Story modal */}
       <AnimatePresence>
