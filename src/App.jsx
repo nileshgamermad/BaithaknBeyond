@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logoDefault from './assets/logo.png';
-import { sections, plannerOptions, plannerSuggestions, mapStops } from './data/index.js';
+import { sections, plannerOptions, plannerSuggestions, mapStops, stories as staticStories } from './data/index.js';
 import { fetchStories, clearToken, getToken } from './api/index.js';
 import AuthModal from './components/AuthModal.jsx';
 
@@ -49,7 +49,7 @@ export default function App() {
   const [emailSubmitted, setEmailSubmitted] = useState(false);
   const [activeTag, setActiveTag] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [stories, setStories] = useState([]);
+  const [stories, setStories] = useState(staticStories);
   const [authOpen, setAuthOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem('baithak-user') || 'null'); }
@@ -66,11 +66,11 @@ export default function App() {
     try { localStorage.setItem("baithak-theme", theme); } catch {}
   }, [theme]);
 
-  // Fetch stories from API
+  // Fetch stories from API, fall back to static data
   useEffect(() => {
     fetchStories()
-      .then((data) => setStories(data))
-      .catch((err) => console.error('Could not load stories:', err))
+      .then((data) => setStories(data.length ? data : staticStories))
+      .catch(() => setStories(staticStories))
       .finally(() => setIsLoading(false));
   }, []);
 
