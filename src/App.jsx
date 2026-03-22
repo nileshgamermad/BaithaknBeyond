@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logoDefault from './assets/logo.png';
-import { sections, stories, plannerOptions, plannerSuggestions, mapStops } from './data/index.js';
+import { sections, plannerOptions, plannerSuggestions, mapStops } from './data/index.js';
+import { fetchStories, clearToken, getToken } from './api/index.js';
+import AuthModal from './components/AuthModal.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
 
@@ -47,6 +49,12 @@ export default function App() {
   const [emailSubmitted, setEmailSubmitted] = useState(false);
   const [activeTag, setActiveTag] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [stories, setStories] = useState([]);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('baithak-user') || 'null'); }
+    catch { return null; }
+  });
   const [theme, setTheme] = useState(() => {
     try { return localStorage.getItem("baithak-theme") || "light"; }
     catch { return "light"; }
@@ -57,6 +65,14 @@ export default function App() {
     document.body.dataset.theme = theme;
     try { localStorage.setItem("baithak-theme", theme); } catch {}
   }, [theme]);
+
+  // Fetch stories from API
+  useEffect(() => {
+    fetchStories()
+      .then((data) => setStories(data))
+      .catch((err) => console.error('Could not load stories:', err))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   // Section intersection observer
   useEffect(() => {
@@ -189,6 +205,21 @@ export default function App() {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
+  const handleAuth = (userData) => {
+    setCurrentUser(userData);
+    try { localStorage.setItem('baithak-user', JSON.stringify(userData)); } catch {}
+  };
+
+  const handleSignOut = () => {
+    clearToken();
+    try { localStorage.removeItem('baithak-user'); } catch {}
+    setCurrentUser(null);
+  };
+
+  const userInitials = currentUser?.name
+    ? currentUser.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+    : '?';
+
   return (
     <>
       <div className={`page-shell ${modalStoryId ? "is-blurred" : ""}`}>
@@ -267,6 +298,21 @@ export default function App() {
               </motion.button>
             ))}
           </div>
+
+          {/* Auth — sign in / user info */}
+          {currentUser ? (
+            <div className="nav-user">
+              {currentUser.avatar
+                ? <img className="nav-user-avatar" src={currentUser.avatar} alt={currentUser.name} />
+                : <span className="nav-user-initials">{userInitials}</span>
+              }
+              <button type="button" className="nav-signout" onClick={handleSignOut}>Sign out</button>
+            </div>
+          ) : (
+            <button type="button" className="nav-auth-btn" onClick={() => setAuthOpen(true)}>
+              Sign in
+            </button>
+          )}
 
           <button
             type="button"
@@ -839,6 +885,14 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Auth Modal */}
+      {authOpen && (
+        <AuthModal
+          onClose={() => setAuthOpen(false)}
+          onAuth={handleAuth}
+        />
+      )}
     </>
   );
 }
