@@ -7,7 +7,7 @@ export default defineConfig(({ command }) => ({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'https://baithakn-beyond-backend.onrender.com',
         changeOrigin: true,
       },
     },
