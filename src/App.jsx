@@ -4,6 +4,7 @@ import logoDefault from './assets/logo.png';
 import { sections, plannerOptions, plannerSuggestions, mapStops, stories as staticStories } from './data/index.js';
 import { fetchStories, clearToken, getToken } from './api/index.js';
 import AuthModal from './components/AuthModal.jsx';
+import ProfileDropdown from './components/ProfileDropdown.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
 
@@ -51,6 +52,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [stories, setStories] = useState(staticStories);
   const [authOpen, setAuthOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem('baithak-user') || 'null'); }
     catch { return null; }
@@ -301,12 +303,26 @@ export default function App() {
 
           {/* Auth — sign in / user info */}
           {currentUser ? (
-            <div className="nav-user">
-              {currentUser.avatar
-                ? <img className="nav-user-avatar" src={currentUser.avatar} alt={currentUser.name} />
-                : <span className="nav-user-initials">{userInitials}</span>
-              }
-              <button type="button" className="nav-signout" onClick={handleSignOut}>Sign out</button>
+            <div className="nav-user" style={{ position: 'relative' }}>
+              <button
+                type="button"
+                className="nav-avatar-btn"
+                aria-label="Open profile"
+                onClick={() => setProfileOpen((o) => !o)}
+              >
+                {currentUser.avatar
+                  ? <img className="nav-user-avatar" src={currentUser.avatar} alt={currentUser.name} referrerPolicy="no-referrer" />
+                  : <span className="nav-user-initials">{userInitials}</span>
+                }
+              </button>
+              {profileOpen && (
+                <ProfileDropdown
+                  user={currentUser}
+                  bookmarkCount={bookmarks.length}
+                  onSignOut={handleSignOut}
+                  onClose={() => setProfileOpen(false)}
+                />
+              )}
             </div>
           ) : (
             <button type="button" className="nav-auth-btn" onClick={() => setAuthOpen(true)}>
