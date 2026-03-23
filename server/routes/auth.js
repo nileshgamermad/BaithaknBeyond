@@ -97,16 +97,16 @@ router.post('/login', async (req, res) => {
 
 // ── Google OAuth ──────────────────────────────────────────────────────────────
 
-// POST /api/auth/google  — body: { credential }  (ID token from Google One Tap)
+// POST /api/auth/google  — body: { access_token }
 router.post('/google', async (req, res) => {
-  const { credential } = req.body;
-  if (!credential) return res.status(400).json({ message: 'Google credential required' });
+  const { access_token } = req.body;
+  if (!access_token) return res.status(400).json({ message: 'Google access token required' });
   try {
-    const ticket = await googleClient.verifyIdToken({
-      idToken:  credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-    const { sub: googleId, name, email, picture: avatar } = ticket.getPayload();
+    const googleRes = await fetch(
+      `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`
+    );
+    if (!googleRes.ok) throw new Error('Failed to fetch Google user info');
+    const { sub: googleId, name, email, picture: avatar } = await googleRes.json();
     const payload = await oauthLogin('googleId', googleId, { name, email, avatar });
     res.json(payload);
   } catch (err) {
