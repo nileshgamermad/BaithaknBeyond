@@ -4,6 +4,7 @@ export const sections = [
   { id: "planner", label: "Planner" },
   { id: "map", label: "Map" },
   { id: "about", label: "About" },
+  { id: "profile", label: "Profile" },
 ];
 
 export const stories = [

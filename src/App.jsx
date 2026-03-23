@@ -744,6 +744,63 @@ export default function App() {
               </a>
             </div>
           </motion.section>
+          {/* Profile */}
+          <motion.section
+            className="profile-section"
+            id="profile"
+            initial={{ opacity: 0, y: 32 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, ease }}
+          >
+            <div className="section-heading">
+              <div>
+                <p className="section-kicker">Your account</p>
+                <h2>Profile</h2>
+              </div>
+            </div>
+
+            {currentUser ? (
+              <div className="profile-card glass-panel">
+                <div className="profile-card-photo-wrap">
+                  {currentUser.avatar
+                    ? <img className="profile-card-photo" src={currentUser.avatar} alt={currentUser.name} referrerPolicy="no-referrer" />
+                    : <div className="profile-card-initials">
+                        {currentUser.name?.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
+                      </div>
+                  }
+                </div>
+                <h3 className="profile-card-name">{currentUser.name}</h3>
+                <p className="profile-card-joined">
+                  Joined {currentUser.createdAt
+                    ? new Date(currentUser.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
+                    : 'recently'}
+                </p>
+                <p className="profile-card-email">{currentUser.email}</p>
+                <div className="profile-card-stats">
+                  <div className="profile-card-stat">
+                    <span>{bookmarks.length}</span>
+                    <label>Saved stories</label>
+                  </div>
+                  <div className="profile-card-stat">
+                    <span>{currentUser.role === 'admin' ? 'Admin' : 'Member'}</span>
+                    <label>Account type</label>
+                  </div>
+                </div>
+                <button type="button" className="profile-card-signout" onClick={handleSignOut}>
+                  Sign out
+                </button>
+              </div>
+            ) : (
+              <div className="profile-guest glass-panel">
+                <p>Sign in to view your profile, saved stories, and more.</p>
+                <button type="button" className="nav-auth-btn" onClick={() => setAuthOpen(true)}>
+                  Sign in
+                </button>
+              </div>
+            )}
+          </motion.section>
+
         </main>
 
         {/* Footer */}
