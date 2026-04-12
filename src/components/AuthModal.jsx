@@ -86,7 +86,8 @@ export default function AuthModal({ onClose, onAuth }) {
       setError('');
       setLoading(true);
       try {
-        const res = await fetch('/api/auth/google', {
+        const base = import.meta.env.VITE_API_URL || 'https://baithakn-beyond-backend.onrender.com/api';
+        const res = await fetch(`${base}/auth/google`, {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
           body:    JSON.stringify({ access_token }),
