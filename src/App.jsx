@@ -271,22 +271,24 @@ export default function App() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </label>
+            </motion.div>
+
+            <motion.div variants={fadeUp} className="hero-actions">
               <motion.button
                 className="hero-cta"
                 type="button"
                 onClick={() => jumpToSection("stories")}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.96 }}
               >
                 Explore Stories
               </motion.button>
               {stories[0] && (
                 <motion.a
-                  className="ghost-link"
-                  style={{ color: 'rgba(248,238,225,0.82)', borderColor: 'rgba(255,255,255,0.22)', background: 'rgba(255,255,255,0.07)' }}
+                  className="hero-ghost"
                   href={`posts/${stories[0].slug}`}
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
                 >
                   Read Featured Article
                 </motion.a>
