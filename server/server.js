@@ -14,12 +14,22 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 // CORS — allow requests from the frontend dev server and production origin
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'https://baithaknbeyond.com',
+  'https://www.baithaknbeyond.com',
+  ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL] : []),
+];
+
 app.use(
   cors({
-    origin: [
-      process.env.CLIENT_URL || 'http://localhost:5173',
-      'https://nilescodes.github.io',   // update to your GitHub Pages domain
-    ],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (curl, Postman, server-to-server)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error(`CORS: origin ${origin} not allowed`));
+    },
     credentials: true,
   })
 );
