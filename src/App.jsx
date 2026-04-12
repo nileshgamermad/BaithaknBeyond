@@ -280,6 +280,17 @@ export default function App() {
               >
                 Explore Stories
               </motion.button>
+              {stories[0] && (
+                <motion.a
+                  className="ghost-link"
+                  style={{ color: 'rgba(248,238,225,0.82)', borderColor: 'rgba(255,255,255,0.22)', background: 'rgba(255,255,255,0.07)' }}
+                  href={`posts/${stories[0].slug}`}
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                >
+                  Read Featured Article
+                </motion.a>
+              )}
             </motion.div>
           </motion.div>
         </header>
@@ -379,6 +390,32 @@ export default function App() {
               <div><p className="section-kicker">Featured journal</p></div>
             </motion.div>
 
+            {/* Category strip */}
+            <div className="category-strip">
+              {[
+                { value: "all",     name: "All Stories",  label: "Browse"   },
+                { value: "history", name: "Heritage",     label: "Category" },
+                { value: "food",    name: "Food Trails",  label: "Category" },
+              ].map((cat) => {
+                const count =
+                  cat.value === "all"
+                    ? stories.length
+                    : stories.filter((s) => s.category === cat.value).length;
+                return (
+                  <button
+                    key={cat.value}
+                    type="button"
+                    className={`category-tile ${activeFilter === cat.value ? "active" : ""}`}
+                    onClick={() => { setActiveFilter(cat.value); setActiveTag(""); }}
+                  >
+                    <span className="category-tile-label">{cat.label}</span>
+                    <span className="category-tile-name">{cat.name}</span>
+                    <span className="category-tile-count">{count} {count === 1 ? "post" : "posts"}</span>
+                  </button>
+                );
+              })}
+            </div>
+
             <motion.div
               className="panel-row"
               initial={{ opacity: 0 }}
@@ -449,15 +486,15 @@ export default function App() {
                 : filteredStories.map((story, i) => (
                     <motion.div
                       key={story.id}
-                      className="col-12 col-md-6"
+                      className={i === 0 ? "col-12" : "col-12 col-md-6"}
                       initial={{ opacity: 0, y: 40 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true, margin: "-60px" }}
                       transition={{ duration: 0.65, delay: i * 0.1, ease }}
                     >
                       <motion.article
-                        className={`story-card glass-panel ${selectedStoryId === story.id ? "selected" : ""}`}
-                        whileHover={{ y: -10, transition: { duration: 0.3, ease } }}
+                        className={`story-card glass-panel ${selectedStoryId === story.id ? "selected" : ""}${i === 0 ? " story-card--featured" : ""}`}
+                        whileHover={{ y: i === 0 ? -5 : -8, scale: i === 0 ? 1.005 : 1.02, transition: { duration: 0.3, ease } }}
                       >
                         <div className="story-media">
                           <img src={story.image} alt={story.alt} />
@@ -498,18 +535,43 @@ export default function App() {
                             </div>
                           )}
                           <div className="story-actions">
-                            <motion.button
-                              type="button"
-                              className={`card-button ${story.accent}`}
-                              onClick={() => openStory(story.id)}
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              Quick View
-                            </motion.button>
-                            <a className="ghost-link" href={`posts/${story.slug}`}>
-                              Read full page
-                            </a>
+                            {i === 0 && <span className="featured-eyebrow">Featured Story</span>}
+                            {i === 0 ? (
+                              <>
+                                <motion.a
+                                  className={`card-button ${story.accent}`}
+                                  href={`posts/${story.slug}`}
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                >
+                                  Read Featured Article
+                                </motion.a>
+                                <motion.button
+                                  type="button"
+                                  className="ghost-link"
+                                  onClick={() => openStory(story.id)}
+                                  whileHover={{ scale: 1.02 }}
+                                  whileTap={{ scale: 0.96 }}
+                                >
+                                  Quick preview
+                                </motion.button>
+                              </>
+                            ) : (
+                              <>
+                                <motion.button
+                                  type="button"
+                                  className={`card-button ${story.accent}`}
+                                  onClick={() => openStory(story.id)}
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                >
+                                  Quick View
+                                </motion.button>
+                                <a className="ghost-link" href={`posts/${story.slug}`}>
+                                  Read full page
+                                </a>
+                              </>
+                            )}
                           </div>
                         </div>
                       </motion.article>
@@ -526,6 +588,26 @@ export default function App() {
               >
                 <h3>No posts match that search yet.</h3>
                 <p>Try searching for a landmark, a food spot, or switch back to all stories.</p>
+              </motion.div>
+            )}
+
+            {!isLoading && filteredStories.length > 1 && (
+              <motion.div
+                className="section-cta-row"
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, ease }}
+              >
+                <motion.button
+                  type="button"
+                  className="ghost-link"
+                  onClick={() => jumpToSection("planner")}
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                >
+                  Explore More Stories
+                </motion.button>
               </motion.div>
             )}
           </section>
