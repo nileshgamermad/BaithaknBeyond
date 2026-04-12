@@ -81,25 +81,29 @@ export default function AuthModal({ onClose, onAuth }) {
 
   /* ── Google ──────────────────────────────────────────────── */
   const googleLogin = useGoogleLogin({
+    flow: 'implicit',
     onSuccess: async ({ access_token }) => {
       setError('');
       setLoading(true);
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/auth/google`, {
+        const res = await fetch('/api/auth/google', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
           body:    JSON.stringify({ access_token }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message);
+        if (!res.ok) throw new Error(data.message || 'Server error');
         finish(data);
       } catch (err) {
-        setError(err.message || 'Google sign-in failed');
+        setError(err.message || 'Google sign-in failed. Please try again.');
       } finally {
         setLoading(false);
       }
     },
-    onError: () => setError('Google sign-in failed'),
+    onError: (err) => {
+      console.error('Google OAuth error:', err);
+      setError('Google sign-in failed — check your browser allows popups for this site.');
+    },
   });
 
   /* ── Facebook ────────────────────────────────────────────── */
