@@ -204,7 +204,7 @@ export default function AuthModal({ onClose, onAuth }) {
 
         <div className="auth-header">
           <h2>{tab === 'signin' ? 'Welcome back' : 'Create account'}</h2>
-          <p>Sign in to bookmark stories and personalise your experience</p>
+          <p>Save your favourite stories and personalise your experience</p>
         </div>
 
         {/* Tabs */}
@@ -221,21 +221,11 @@ export default function AuthModal({ onClose, onAuth }) {
         <div className="auth-social">
           <button className="oauth-btn oauth-btn--google" onClick={() => googleLogin()} disabled={loading}>
             <GoogleIcon />
-            {tab === 'signin' ? 'Sign in with Google' : 'Sign up with Google'}
-          </button>
-
-          <button className="oauth-btn oauth-btn--apple" onClick={handleApple} disabled={loading}>
-            <AppleIcon />
-            {tab === 'signin' ? 'Sign in with Apple' : 'Sign up with Apple'}
-          </button>
-
-          <button className="oauth-btn oauth-btn--facebook" onClick={handleFacebook} disabled={loading}>
-            <FacebookIcon />
-            {tab === 'signin' ? 'Sign in with Facebook' : 'Sign up with Facebook'}
+            Continue with Google
           </button>
         </div>
 
-        <div className="auth-divider">or continue with email</div>
+        <div className="auth-divider">or</div>
 
         {/* Email form */}
         <form className="auth-form" onSubmit={handleSubmit}>
