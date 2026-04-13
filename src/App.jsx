@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logoDefault from './assets/logo.png';
 import { sections, plannerOptions, plannerSuggestions, mapStops, stories as staticStories } from './data/index.js';
-import { fetchStories, clearToken, getToken, fetchBookmarks, toggleBookmarkApi } from './api/index.js';
+import { fetchStories, clearToken, getToken, getMe, fetchBookmarks, toggleBookmarkApi } from './api/index.js';
 import AuthModal from './components/AuthModal.jsx';
 import ProfileDropdown from './components/ProfileDropdown.jsx';
 
@@ -64,6 +64,34 @@ export default function App() {
     document.body.dataset.theme = theme;
     try { localStorage.setItem("baithak-theme", theme); } catch {}
   }, [theme]);
+
+  // ── Session validation on mount ───────────────────────────────────────────
+  // We optimistically restore currentUser from localStorage so the UI renders
+  // immediately. Then we verify the JWT against the backend. If it has expired
+  // (7-day window) we sign the user out cleanly instead of silently failing.
+  useEffect(() => {
+    const token = getToken();
+    if (!token) return; // not logged in — nothing to validate
+
+    console.log('[Auth] Token found in storage, validating session…');
+    getMe(token)
+      .then((freshUser) => {
+        // Server confirmed the token is valid — update with latest user data
+        // (name / avatar may have changed). Keep the token in the object so
+        // the stored shape stays consistent.
+        console.log('[Auth] Session valid ✓  user:', freshUser.email, ' id:', freshUser._id);
+        const merged = { ...freshUser, token };
+        setCurrentUser(merged);
+        try { localStorage.setItem('baithak-user', JSON.stringify(merged)); } catch {}
+      })
+      .catch((err) => {
+        // 401 → token expired or tampered. Sign the user out.
+        console.warn('[Auth] Session invalid, signing out:', err.message);
+        clearToken();
+        try { localStorage.removeItem('baithak-user'); } catch {}
+        setCurrentUser(null);
+      });
+  }, []); // run exactly once on mount
 
   // Fetch stories from API, fall back to static data
   useEffect(() => {
@@ -141,13 +169,31 @@ export default function App() {
     return () => clearTimeout(t);
   }, []);
 
-  // Sync bookmarks from server whenever the logged-in user changes
+  // ── Bookmark sync ────────────────────────────────────────────────────────
+  // Keyed off _id (not the whole object) so it only re-fires when the
+  // actual account changes, not on every user-object update.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (!currentUser) { setBookmarks([]); return; }
+    if (!currentUser?._id) { setBookmarks([]); return; }
+
     const token = getToken();
-    if (!token) return;
-    fetchBookmarks(token).then(setBookmarks).catch(() => setBookmarks([]));
-  }, [currentUser]);
+    if (!token) {
+      console.warn('[Bookmarks] currentUser present but no token — cannot fetch');
+      return;
+    }
+
+    console.log('[Bookmarks] Fetching for', currentUser.email, '(id:', currentUser._id + ')');
+    fetchBookmarks(token)
+      .then((ids) => {
+        console.log('[Bookmarks] Loaded', ids.length, 'saved post(s):', ids);
+        setBookmarks(ids);
+      })
+      .catch((err) => {
+        console.error('[Bookmarks] Fetch failed:', err.message);
+        setBookmarks([]);
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?._id]); // only re-run when the logged-in account changes
 
   const allTags = useMemo(() => {
     const set = new Set();
@@ -189,23 +235,37 @@ export default function App() {
   };
 
   const toggleBookmark = async (storyId) => {
-    // Require sign-in
-    if (!currentUser) { setAuthOpen(true); return; }
+    if (!currentUser) {
+      console.log('[Bookmark] Not signed in — opening auth modal');
+      setAuthOpen(true);
+      return;
+    }
 
     const token = getToken();
-    if (!token) return;
+    if (!token) {
+      console.warn('[Bookmark] currentUser set but no token found — opening auth modal');
+      setAuthOpen(true);
+      return;
+    }
+
+    // Capture snapshot BEFORE the optimistic flip so rollback is safe
+    // even if multiple toggles fire in quick succession.
+    const snapshot = [...bookmarks];
+    const wasBookmarked = snapshot.includes(storyId);
 
     // Optimistic update — flip immediately for snappy UX
-    const prev = bookmarks;
-    setBookmarks(prev.includes(storyId)
-      ? prev.filter((id) => id !== storyId)
-      : [...prev, storyId]);
+    setBookmarks(wasBookmarked
+      ? snapshot.filter((id) => id !== storyId)
+      : [...snapshot, storyId]);
 
     try {
       const updated = await toggleBookmarkApi(token, storyId);
-      setBookmarks(updated); // authoritative server state
-    } catch {
-      setBookmarks(prev); // roll back on error
+      console.log('[Bookmark] Toggled', storyId, '→', wasBookmarked ? 'removed' : 'saved',
+                  '| total saved:', updated.length);
+      setBookmarks(updated); // replace with authoritative server list
+    } catch (err) {
+      console.error('[Bookmark] API call failed, rolling back:', err.message);
+      setBookmarks(snapshot); // restore exact pre-click state
     }
   };
 
