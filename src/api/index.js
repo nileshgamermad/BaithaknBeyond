@@ -46,8 +46,33 @@ export const getMe = async (token) => {
   return res.json();
 };
 
+// ── Bookmarks ─────────────────────────────────────────────────────────────────
+
+// Returns the array of saved story IDs for the authenticated user
+export const fetchBookmarks = async (token) => {
+  const res = await fetch(`${BASE}/bookmarks`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return [];
+  return res.json();
+};
+
+// Toggles a story bookmark server-side; returns the updated array of IDs
+export const toggleBookmarkApi = async (token, storyId) => {
+  const res = await fetch(`${BASE}/bookmarks/toggle`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ storyId }),
+  });
+  if (!res.ok) throw new Error('Failed to toggle bookmark');
+  return res.json();
+};
+
 // ── Token helpers ─────────────────────────────────────────────────────────────
 
-export const saveToken = (token) => localStorage.setItem('baithak-token', token);
-export const getToken  = ()      => localStorage.getItem('baithak-token');
-export const clearToken = ()     => localStorage.removeItem('baithak-token');
+export const saveToken  = (token) => localStorage.setItem('baithak-token', token);
+export const getToken   = ()      => localStorage.getItem('baithak-token');
+export const clearToken = ()      => localStorage.removeItem('baithak-token');

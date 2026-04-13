@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logoDefault from './assets/logo.png';
 import { sections, plannerOptions, plannerSuggestions, mapStops, stories as staticStories } from './data/index.js';
-import { fetchStories, clearToken, getToken } from './api/index.js';
+import { fetchStories, clearToken, getToken, fetchBookmarks, toggleBookmarkApi } from './api/index.js';
 import AuthModal from './components/AuthModal.jsx';
 import ProfileDropdown from './components/ProfileDropdown.jsx';
 
@@ -40,10 +40,7 @@ export default function App() {
   const [planner, setPlanner] = useState({ mood: "food", time: "morning" });
   const [searchTerm, setSearchTerm] = useState("");
   const [logoSrc, setLogoSrc] = useState(logoDefault);
-  const [bookmarks, setBookmarks] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("baithak-bookmarks") || "[]"); }
-    catch { return []; }
-  });
+  const [bookmarks, setBookmarks] = useState([]);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -144,10 +141,13 @@ export default function App() {
     return () => clearTimeout(t);
   }, []);
 
-  // Persist bookmarks
+  // Sync bookmarks from server whenever the logged-in user changes
   useEffect(() => {
-    try { localStorage.setItem("baithak-bookmarks", JSON.stringify(bookmarks)); } catch {}
-  }, [bookmarks]);
+    if (!currentUser) { setBookmarks([]); return; }
+    const token = getToken();
+    if (!token) return;
+    fetchBookmarks(token).then(setBookmarks).catch(() => setBookmarks([]));
+  }, [currentUser]);
 
   const allTags = useMemo(() => {
     const set = new Set();
@@ -188,10 +188,25 @@ export default function App() {
     setModalStoryId(storyId);
   };
 
-  const toggleBookmark = (storyId) => {
-    setBookmarks((prev) =>
-      prev.includes(storyId) ? prev.filter((id) => id !== storyId) : [...prev, storyId]
-    );
+  const toggleBookmark = async (storyId) => {
+    // Require sign-in
+    if (!currentUser) { setAuthOpen(true); return; }
+
+    const token = getToken();
+    if (!token) return;
+
+    // Optimistic update — flip immediately for snappy UX
+    const prev = bookmarks;
+    setBookmarks(prev.includes(storyId)
+      ? prev.filter((id) => id !== storyId)
+      : [...prev, storyId]);
+
+    try {
+      const updated = await toggleBookmarkApi(token, storyId);
+      setBookmarks(updated); // authoritative server state
+    } catch {
+      setBookmarks(prev); // roll back on error
+    }
   };
 
   const handleEmailSubmit = (e) => {

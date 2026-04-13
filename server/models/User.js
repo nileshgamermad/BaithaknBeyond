@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema(
     googleId:   { type: String },
     facebookId: { type: String },
     appleId:    { type: String },
+    bookmarks:  { type: [String], default: [] }, // story IDs saved by this user
   },
   { timestamps: true }
 );

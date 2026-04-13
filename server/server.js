@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import storyRoutes from './routes/stories.js';
 import authRoutes from './routes/auth.js';
+import bookmarkRoutes from './routes/bookmarks.js';
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.use(express.json());
 // Routes
 app.use('/api/stories', storyRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/bookmarks', bookmarkRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
