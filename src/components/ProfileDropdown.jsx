@@ -17,7 +17,7 @@ export default function ProfileDropdown({ user, bookmarkCount, onSignOut, onClos
     : '?';
 
   return (
-    <div className="profile-dropdown glass-panel" ref={ref}>
+    <div className="profile-dropdown" ref={ref}>
       <div className="profile-top">
         {user.avatar
           ? <img className="profile-avatar" src={user.avatar} alt={user.name} referrerPolicy="no-referrer" />
