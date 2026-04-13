@@ -299,59 +299,89 @@ export default function App() {
 
         {/* ─── NAV ─── */}
         <nav className="container site-container top-nav glass-panel" aria-label="Primary">
-          <div className="nav-links">
-            {sections.map((section) => (
-              <motion.button
-                key={section.id}
-                type="button"
-                className={`nav-link ${activeSection === section.id ? "active" : ""}`}
-                onClick={() => jumpToSection(section.id)}
-                whileHover={{ scale: 1.07 }}
-                whileTap={{ scale: 0.93 }}
-              >
-                {section.label}
-              </motion.button>
-            ))}
-          </div>
+          <div className="nav-inner">
 
-          {/* Auth — sign in / user info */}
-          {currentUser ? (
-            <div className="nav-user" style={{ position: 'relative' }}>
+            {/* LEFT — section links */}
+            <div className="nav-left">
+              {sections.map((section) => (
+                <motion.button
+                  key={section.id}
+                  type="button"
+                  className={`nav-link ${activeSection === section.id ? "active" : ""}`}
+                  onClick={() => jumpToSection(section.id)}
+                  whileHover={{ scale: 1.06 }}
+                  whileTap={{ scale: 0.93 }}
+                >
+                  {section.label}
+                </motion.button>
+              ))}
+            </div>
+
+            {/* CENTER — brand wordmark */}
+            <button
+              type="button"
+              className="nav-brand"
+              onClick={() => jumpToSection('home')}
+              aria-label="Go to home"
+            >
+              Baithak &amp; Beyond
+            </button>
+
+            {/* RIGHT — search + join/avatar + hamburger */}
+            <div className="nav-right">
+              {/* Search icon */}
               <button
                 type="button"
-                className="nav-avatar-btn"
-                aria-label="Open profile"
-                onClick={() => setProfileOpen((o) => !o)}
+                className="nav-icon-btn"
+                aria-label="Search"
+                onClick={() => { jumpToSection('home'); setTimeout(() => { document.querySelector('.search-shell input')?.focus(); }, 350); }}
               >
-                {currentUser.avatar
-                  ? <img className="nav-user-avatar" src={currentUser.avatar} alt={currentUser.name} referrerPolicy="no-referrer" />
-                  : <span className="nav-user-initials">{userInitials}</span>
-                }
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+                </svg>
               </button>
-              {profileOpen && (
-                <ProfileDropdown
-                  user={currentUser}
-                  bookmarkCount={bookmarks.length}
-                  onSignOut={handleSignOut}
-                  onClose={() => setProfileOpen(false)}
-                />
-              )}
-            </div>
-          ) : (
-            <button type="button" className="nav-auth-btn" onClick={() => setAuthOpen(true)}>
-              Sign in
-            </button>
-          )}
 
-          <button
-            type="button"
-            className={`hamburger ${menuOpen ? "is-open" : ""}`}
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((o) => !o)}
-          >
-            <span /><span /><span />
-          </button>
+              {/* Auth */}
+              {currentUser ? (
+                <div className="nav-user" style={{ position: 'relative' }}>
+                  <button
+                    type="button"
+                    className="nav-avatar-btn"
+                    aria-label="Open profile"
+                    onClick={() => setProfileOpen((o) => !o)}
+                  >
+                    {currentUser.avatar
+                      ? <img className="nav-user-avatar" src={currentUser.avatar} alt={currentUser.name} referrerPolicy="no-referrer" />
+                      : <span className="nav-user-initials">{userInitials}</span>
+                    }
+                  </button>
+                  {profileOpen && (
+                    <ProfileDropdown
+                      user={currentUser}
+                      bookmarkCount={bookmarks.length}
+                      onSignOut={handleSignOut}
+                      onClose={() => setProfileOpen(false)}
+                    />
+                  )}
+                </div>
+              ) : (
+                <button type="button" className="nav-join-btn" onClick={() => setAuthOpen(true)}>
+                  Join Now
+                </button>
+              )}
+
+              {/* Hamburger — mobile only */}
+              <button
+                type="button"
+                className={`hamburger ${menuOpen ? "is-open" : ""}`}
+                aria-label={menuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={menuOpen}
+                onClick={() => setMenuOpen((o) => !o)}
+              >
+                <span /><span /><span />
+              </button>
+            </div>
+          </div>
 
           <AnimatePresence>
             {menuOpen && (

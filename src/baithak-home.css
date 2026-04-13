@@ -415,36 +415,141 @@ body[data-theme="dark"] .intro h1 {
 .top-nav {
   position: relative;
   z-index: 5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 6px;
   margin-top: 16px;
-  padding: 10px;
+  padding: 8px 14px;
   border-radius: var(--radius-xl);
   border-color: var(--line-2);
 }
 
-.nav-links {
+/* Three-column inner layout */
+.nav-inner {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 4px;
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+  min-height: 44px;
+}
+
+/* LEFT — section links */
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 2px;
   flex: 1;
 }
 
+/* CENTER — brand wordmark (absolutely centered) */
+.nav-brand {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  color: var(--heading);
+  white-space: nowrap;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.18s ease, opacity 0.18s ease;
+  pointer-events: auto;
+}
+
+.nav-brand:hover { color: var(--ganga); opacity: 0.88; }
+
+body[data-theme="dark"] .nav-brand { color: #fff; }
+body[data-theme="dark"] .nav-brand:hover { color: var(--accent); }
+
+/* RIGHT — icons + join button + hamburger */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+/* Search / icon buttons */
+.nav-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.nav-icon-btn:hover {
+  background: var(--surface-2);
+  color: var(--heading);
+  border-color: var(--line-3);
+}
+
+body[data-theme="dark"] .nav-icon-btn:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+/* Join Now button */
+.nav-join-btn {
+  padding: 7px 18px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #9e1c14 0%, #6b0f0a 100%);
+  box-shadow: 0 3px 12px rgba(139, 15, 10, 0.28), 0 1px 0 rgba(255,255,255,0.08) inset;
+  color: #fff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: box-shadow 0.2s ease, transform 0.15s ease, filter 0.15s ease;
+}
+
+.nav-join-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow: 0 6px 20px rgba(139, 15, 10, 0.38), 0 1px 0 rgba(255,255,255,0.1) inset;
+}
+
+.nav-join-btn:active {
+  transform: scale(0.97);
+  filter: brightness(0.96);
+  box-shadow: none;
+}
+
+body[data-theme="dark"] .nav-join-btn {
+  background: linear-gradient(135deg, #a87cf5, #7c3aed);
+  box-shadow: 0 3px 12px rgba(168, 124, 245, 0.3), 0 1px 0 rgba(255,255,255,0.08) inset;
+}
+
+body[data-theme="dark"] .nav-join-btn:hover {
+  box-shadow: 0 6px 20px rgba(168, 124, 245, 0.42), 0 1px 0 rgba(255,255,255,0.1) inset;
+}
+
 .nav-link {
-  padding: 9px 16px;
+  padding: 7px 14px;
   border-radius: 999px;
   color: var(--text-soft);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 700;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   transition: color 0.18s ease, background 0.18s ease, transform 0.15s ease;
   cursor: pointer;
+  white-space: nowrap;
 }
 .nav-link:active { transform: scale(0.96); }
 
@@ -461,6 +566,13 @@ body[data-theme="dark"] .intro h1 {
 body[data-theme="dark"] .nav-link.active {
   color: var(--accent);
   background: rgba(168, 124, 245, 0.12);
+}
+
+/* Hide nav-left links on mobile — hamburger menu takes over */
+@media (max-width: 680px) {
+  .nav-left { display: none; }
+  .nav-icon-btn { display: none; }
+  .nav-brand { font-size: 0.92rem; }
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1461,8 +1573,7 @@ body[data-theme="dark"] .mobile-nav-link.active {
   .discover-panel, .recent-posts-panel, .story-modal-copy { padding: 18px; }
   .map-frame iframe { min-height: 300px; }
 
-  .top-nav { justify-content: flex-end; position: relative; }
-  .nav-links { display: none; }
+  .top-nav { padding: 6px 10px; }
   .hamburger { display: flex; }
 
   .subscribe-form { flex-direction: column; min-width: unset; width: 100%; }
