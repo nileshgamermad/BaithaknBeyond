@@ -418,70 +418,106 @@ body[data-theme="dark"] .intro h1 {
   position: relative;
   z-index: 5;
   margin-top: 16px;
-  padding: 8px 14px;
+  padding: 6px 20px;
   border-radius: var(--radius-xl);
   border-color: var(--line-2);
 }
 
-/* Three-column inner layout */
+/* ── Core 3-child flex row ──────────────────────────── */
+/*  nav-left (flex:1) | nav-brand (auto) | nav-right (flex:1)
+    Both outer children expand equally → brand sits at true center
+    with ZERO absolute positioning.                              */
+
 .nav-inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  position: relative;
   width: 100%;
-  min-height: 44px;
+  min-height: 46px;
 }
 
-/* LEFT — section links */
+/* LEFT ─ Home, Stories */
 .nav-left {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 2px;
-  flex: 1;
-  /* Prevent growing into center brand zone */
-  max-width: calc(50% - 120px);
-  overflow: hidden;
 }
 
-/* CENTER — brand wordmark (absolutely centered) */
+/* CENTER ─ Brand wordmark */
 .nav-brand {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: "Fraunces", Georgia, serif;
-  font-size: 1.05rem;
-  font-weight: 700;
-  font-style: italic;
-  letter-spacing: -0.01em;
+  flex-shrink: 0;
+  /* premium editorial serif */
+  font-family: "Playfair Display", "Fraunces", Georgia, serif;
+  font-size: 1.12rem;
+  font-weight: 500;
+  font-style: normal;
+  letter-spacing: 0.03em;
   color: var(--heading);
   white-space: nowrap;
-  cursor: pointer;
   background: none;
   border: none;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: color 0.18s ease, opacity 0.18s ease;
-  pointer-events: auto;
+  padding: 6px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.2s ease, opacity 0.18s ease;
 }
 
-.nav-brand:hover { color: var(--ganga); opacity: 0.88; }
+.nav-brand:hover { color: var(--ganga); opacity: 0.86; }
 
-body[data-theme="dark"] .nav-brand { color: #fff; }
-body[data-theme="dark"] .nav-brand:hover { color: var(--accent); }
+body[data-theme="dark"] .nav-brand         { color: #fff; }
+body[data-theme="dark"] .nav-brand:hover   { color: var(--accent); }
 
-/* RIGHT — icons + join button + hamburger */
+/* RIGHT ─ Planner, Map, About + actions */
 .nav-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.nav-links-right {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.nav-actions {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex: 1;
-  justify-content: flex-end;
-  /* Prevent growing into center brand zone */
-  max-width: calc(50% - 120px);
+  margin-left: 8px;
 }
 
-/* Search / icon buttons */
+/* ── Nav links ──────────────────────────────────────── */
+.nav-link {
+  padding: 7px 13px;
+  border-radius: 999px;
+  color: var(--text-soft);
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.18s ease, background 0.18s ease, opacity 0.18s ease;
+}
+
+.nav-link:hover  { color: var(--heading); background: var(--surface-2); }
+.nav-link:active { opacity: 0.7; }
+
+.nav-link.active {
+  color: var(--ganga);
+  background: rgba(30, 132, 173, 0.1);
+  font-weight: 600;
+}
+
+body[data-theme="dark"] .nav-link.active {
+  color: var(--accent);
+  background: rgba(168, 124, 245, 0.12);
+}
+
+/* ── Search icon button ─────────────────────────────── */
 .nav-icon-btn {
   display: flex;
   align-items: center;
@@ -493,13 +529,13 @@ body[data-theme="dark"] .nav-brand:hover { color: var(--accent); }
   background: transparent;
   color: var(--text-soft);
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .nav-icon-btn:hover {
   background: var(--surface-2);
   color: var(--heading);
-  border-color: var(--line-3);
 }
 
 body[data-theme="dark"] .nav-icon-btn:hover {
@@ -507,7 +543,7 @@ body[data-theme="dark"] .nav-icon-btn:hover {
   color: #fff;
 }
 
-/* Join Now button */
+/* ── Join Now button ────────────────────────────────── */
 .nav-join-btn {
   padding: 7px 18px;
   border-radius: 999px;
@@ -515,13 +551,14 @@ body[data-theme="dark"] .nav-icon-btn:hover {
   background: linear-gradient(135deg, #9e1c14 0%, #6b0f0a 100%);
   box-shadow: 0 3px 12px rgba(139, 15, 10, 0.28), 0 1px 0 rgba(255,255,255,0.08) inset;
   color: #fff;
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  white-space: nowrap;
   cursor: pointer;
   font-family: inherit;
-  white-space: nowrap;
+  flex-shrink: 0;
   transition: box-shadow 0.2s ease, transform 0.15s ease, filter 0.15s ease;
 }
 
@@ -546,40 +583,29 @@ body[data-theme="dark"] .nav-join-btn:hover {
   box-shadow: 0 6px 20px rgba(168, 124, 245, 0.42), 0 1px 0 rgba(255,255,255,0.1) inset;
 }
 
-.nav-link {
-  padding: 7px 14px;
-  border-radius: 999px;
-  color: var(--text-soft);
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  transition: color 0.18s ease, background 0.18s ease, transform 0.15s ease;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.nav-link:active { transform: scale(0.96); }
+/* ── Mobile ─────────────────────────────────────────── */
+/* On mobile: nav-left hidden, brand gets flex:1 + text-align:center
+   so it fills the space and centers itself.
+   nav-right shrinks to auto width (join + hamburger only).      */
 
-.nav-link:hover {
-  color: var(--heading);
-  background: var(--surface-2);
-}
+@media (max-width: 768px) {
+  .nav-left        { display: none; }
+  .nav-links-right { display: none; }
+  .nav-icon-btn    { display: none; }
 
-.nav-link.active {
-  color: var(--ganga);
-  background: rgba(30, 132, 173, 0.1);
-}
+  .nav-brand {
+    flex: 1;
+    text-align: center;
+    padding: 6px 8px;
+    font-size: 1rem;
+  }
 
-body[data-theme="dark"] .nav-link.active {
-  color: var(--accent);
-  background: rgba(168, 124, 245, 0.12);
-}
+  .nav-right {
+    flex: none;
+    gap: 6px;
+  }
 
-/* Hide nav-left links on mobile — hamburger menu takes over */
-@media (max-width: 680px) {
-  .nav-left { display: none; }
-  .nav-icon-btn { display: none; }
-  .nav-brand { font-size: 0.92rem; }
+  .nav-actions { margin-left: 0; gap: 6px; }
 }
 
 /* ═══════════════════════════════════════════════════════

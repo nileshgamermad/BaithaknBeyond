@@ -301,23 +301,25 @@ export default function App() {
         <nav className="container site-container top-nav glass-panel" aria-label="Primary">
           <div className="nav-inner">
 
-            {/* LEFT — section links */}
+            {/* LEFT — Home, Stories (flex: 1 for true centering) */}
             <div className="nav-left">
-              {sections.map((section) => (
-                <motion.button
-                  key={section.id}
-                  type="button"
-                  className={`nav-link ${activeSection === section.id ? "active" : ""}`}
-                  onClick={() => jumpToSection(section.id)}
-                  whileHover={{ scale: 1.06 }}
-                  whileTap={{ scale: 0.93 }}
-                >
-                  {section.label}
-                </motion.button>
-              ))}
+              {sections
+                .filter((s) => ['home', 'stories'].includes(s.id))
+                .map((section) => (
+                  <motion.button
+                    key={section.id}
+                    type="button"
+                    className={`nav-link ${activeSection === section.id ? 'active' : ''}`}
+                    onClick={() => jumpToSection(section.id)}
+                    whileHover={{ scale: 1.06 }}
+                    whileTap={{ scale: 0.93 }}
+                  >
+                    {section.label}
+                  </motion.button>
+                ))}
             </div>
 
-            {/* CENTER — brand wordmark */}
+            {/* CENTER — brand wordmark (in-flow, no absolute positioning) */}
             <button
               type="button"
               className="nav-brand"
@@ -327,59 +329,80 @@ export default function App() {
               Baithak &amp; Beyond
             </button>
 
-            {/* RIGHT — search + join/avatar + hamburger */}
+            {/* RIGHT — Planner, Map, About + search + join/avatar + hamburger (flex: 1) */}
             <div className="nav-right">
-              {/* Search icon */}
-              <button
-                type="button"
-                className="nav-icon-btn"
-                aria-label="Search"
-                onClick={() => { jumpToSection('home'); setTimeout(() => { document.querySelector('.search-shell input')?.focus(); }, 350); }}
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-                </svg>
-              </button>
+              {/* Section links — hidden on mobile */}
+              <div className="nav-links-right">
+                {sections
+                  .filter((s) => ['planner', 'map', 'about'].includes(s.id))
+                  .map((section) => (
+                    <motion.button
+                      key={section.id}
+                      type="button"
+                      className={`nav-link ${activeSection === section.id ? 'active' : ''}`}
+                      onClick={() => jumpToSection(section.id)}
+                      whileHover={{ scale: 1.06 }}
+                      whileTap={{ scale: 0.93 }}
+                    >
+                      {section.label}
+                    </motion.button>
+                  ))}
+              </div>
 
-              {/* Auth */}
-              {currentUser ? (
-                <div className="nav-user" style={{ position: 'relative' }}>
-                  <button
-                    type="button"
-                    className="nav-avatar-btn"
-                    aria-label="Open profile"
-                    onClick={() => setProfileOpen((o) => !o)}
-                  >
-                    {currentUser.avatar
-                      ? <img className="nav-user-avatar" src={currentUser.avatar} alt={currentUser.name} referrerPolicy="no-referrer" />
-                      : <span className="nav-user-initials">{userInitials}</span>
-                    }
-                  </button>
-                  {profileOpen && (
-                    <ProfileDropdown
-                      user={currentUser}
-                      bookmarkCount={bookmarks.length}
-                      onSignOut={handleSignOut}
-                      onClose={() => setProfileOpen(false)}
-                    />
-                  )}
-                </div>
-              ) : (
-                <button type="button" className="nav-join-btn" onClick={() => setAuthOpen(true)}>
-                  Join Now
+              {/* Actions — search + auth + hamburger */}
+              <div className="nav-actions">
+                {/* Search icon — hidden on mobile */}
+                <button
+                  type="button"
+                  className="nav-icon-btn"
+                  aria-label="Search"
+                  onClick={() => { jumpToSection('home'); setTimeout(() => { document.querySelector('.search-shell input')?.focus(); }, 350); }}
+                >
+                  <svg viewBox="0 0 24 24" width="17" height="17" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+                  </svg>
                 </button>
-              )}
 
-              {/* Hamburger — mobile only */}
-              <button
-                type="button"
-                className={`hamburger ${menuOpen ? "is-open" : ""}`}
-                aria-label={menuOpen ? "Close menu" : "Open menu"}
-                aria-expanded={menuOpen}
-                onClick={() => setMenuOpen((o) => !o)}
-              >
-                <span /><span /><span />
-              </button>
+                {/* Auth */}
+                {currentUser ? (
+                  <div className="nav-user" style={{ position: 'relative' }}>
+                    <button
+                      type="button"
+                      className="nav-avatar-btn"
+                      aria-label="Open profile"
+                      onClick={() => setProfileOpen((o) => !o)}
+                    >
+                      {currentUser.avatar
+                        ? <img className="nav-user-avatar" src={currentUser.avatar} alt={currentUser.name} referrerPolicy="no-referrer" />
+                        : <span className="nav-user-initials">{userInitials}</span>
+                      }
+                    </button>
+                    {profileOpen && (
+                      <ProfileDropdown
+                        user={currentUser}
+                        bookmarkCount={bookmarks.length}
+                        onSignOut={handleSignOut}
+                        onClose={() => setProfileOpen(false)}
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <button type="button" className="nav-join-btn" onClick={() => setAuthOpen(true)}>
+                    Join Now
+                  </button>
+                )}
+
+                {/* Hamburger — mobile only */}
+                <button
+                  type="button"
+                  className={`hamburger ${menuOpen ? 'is-open' : ''}`}
+                  aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+                  aria-expanded={menuOpen}
+                  onClick={() => setMenuOpen((o) => !o)}
+                >
+                  <span /><span /><span />
+                </button>
+              </div>
             </div>
           </div>
 
