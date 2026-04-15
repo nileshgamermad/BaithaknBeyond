@@ -1,5 +1,34 @@
 const BASE = import.meta.env.VITE_API_URL || 'https://baithakn-beyond-backend.onrender.com/api';
 
+// ── Response cache ────────────────────────────────────────────────────────────
+// Lightweight in-memory TTL cache for GET-only endpoints.
+// Prevents duplicate network requests when the same URL is called within the
+// cache window (e.g. navigating back to the stories section).
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+const _cache = new Map(); // key → { data, expiresAt }
+
+function cacheGet(key) {
+  const entry = _cache.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) { _cache.delete(key); return null; }
+  return entry.data;
+}
+
+function cacheSet(key, data) {
+  _cache.set(key, { data, expiresAt: Date.now() + CACHE_TTL_MS });
+}
+
+async function cachedFetch(url) {
+  const hit = cacheGet(url);
+  if (hit !== null) return hit;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Fetch failed: ${url}`);
+  const data = await res.json();
+  cacheSet(url, data);
+  return data;
+}
+
 // ── Stories ──────────────────────────────────────────────────────────────────
 
 export const fetchStories = async (params = {}) => {
@@ -9,9 +38,7 @@ export const fetchStories = async (params = {}) => {
   });
 
   const suffix = searchParams.toString() ? `?${searchParams.toString()}` : '';
-  const res = await fetch(`${BASE}/stories${suffix}`);
-  if (!res.ok) throw new Error('Failed to fetch stories');
-  const data = await res.json();
+  const data = await cachedFetch(`${BASE}/stories${suffix}`);
   if (Array.isArray(data)) {
     return { items: data, total: data.length, hasMore: false };
   }
@@ -19,28 +46,34 @@ export const fetchStories = async (params = {}) => {
 };
 
 export const fetchStory = async (id) => {
-  const res = await fetch(`${BASE}/stories/${id}`);
-  if (!res.ok) throw new Error('Story not found');
-  return res.json();
+  return cachedFetch(`${BASE}/stories/${id}`);
 };
 
 export const fetchStorySuggestions = async (query) => {
   if (!query?.trim()) return { posts: [], categories: [], tags: [] };
-  const res = await fetch(`${BASE}/stories/search/suggestions?q=${encodeURIComponent(query.trim())}`);
-  if (!res.ok) return { posts: [], categories: [], tags: [] };
-  return res.json();
+  try {
+    const res = await fetch(`${BASE}/stories/search/suggestions?q=${encodeURIComponent(query.trim())}`);
+    if (!res.ok) return { posts: [], categories: [], tags: [] };
+    return res.json();
+  } catch {
+    return { posts: [], categories: [], tags: [] };
+  }
 };
 
 export const fetchRelatedStories = async (id) => {
-  const res = await fetch(`${BASE}/stories/related/${id}`);
-  if (!res.ok) return [];
-  return res.json();
+  try {
+    return await cachedFetch(`${BASE}/stories/related/${id}`);
+  } catch {
+    return [];
+  }
 };
 
 export const fetchTags = async () => {
-  const res = await fetch(`${BASE}/stories/tags`);
-  if (!res.ok) return [];
-  return res.json();
+  try {
+    return await cachedFetch(`${BASE}/stories/tags`);
+  } catch {
+    return [];
+  }
 };
 
 // ── Auth ─────────────────────────────────────────────────────────────────────

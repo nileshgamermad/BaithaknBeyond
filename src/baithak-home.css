@@ -624,7 +624,7 @@ body[data-theme="dark"] .nav-icon-btn:hover {
 }
 
 .nav-join-btn:hover {
-  transform: translateY(-1px);
+  transform: translateY(-1px) scale(1.02);
   filter: brightness(1.08);
   box-shadow: 0 6px 20px rgba(139, 15, 10, 0.38), 0 1px 0 rgba(255,255,255,0.1) inset;
 }
@@ -2989,4 +2989,164 @@ body[data-theme="dark"] .badge-because {
   .for-you-section { padding-top: 1.5rem; }
   .for-you-hint    { display: none; }
   .because-group-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   MICRO-INTERACTIONS & ANIMATIONS
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── Bookmark / Save button ────────────────────────── */
+.bookmark-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(10, 8, 5, 0.48);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  /* Framer Motion handles scale via whileHover / whileTap */
+}
+
+.bookmark-btn.bookmarked {
+  background: rgba(196, 154, 108, 0.28);
+  color: var(--gold, #C49A6C);
+  box-shadow: 0 0 0 2px rgba(196, 154, 108, 0.4);
+  animation: bookmarkPop 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+body[data-theme="dark"] .bookmark-btn {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.72);
+}
+
+body[data-theme="dark"] .bookmark-btn.bookmarked {
+  background: rgba(168, 124, 245, 0.22);
+  color: var(--accent, #a87cf5);
+  box-shadow: 0 0 0 2px rgba(168, 124, 245, 0.45);
+}
+
+@keyframes bookmarkPop {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.45); }
+  65%  { transform: scale(0.82); }
+  85%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+/* ─── Nav link underline slide ───────────────────────── */
+.nav-link {
+  position: relative;
+  overflow: visible; /* allow ::after to show */
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 13px;
+  right: 13px;
+  height: 1.5px;
+  border-radius: 999px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.22s ease;
+  pointer-events: none;
+}
+
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+.nav-link.active::after {
+  transform: scaleX(1);
+}
+
+body[data-theme="dark"] .nav-link::after {
+  background: var(--accent);
+}
+
+/* ─── Ghost / secondary button active state ──────────── */
+.ghost-link:active {
+  transform: scale(0.97) translateY(0);
+  box-shadow: none;
+}
+
+/* ─── Mobile nav link interactions ───────────────────── */
+.mobile-nav-link {
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.mobile-nav-link:active {
+  transform: scale(0.97);
+  opacity: 0.8;
+}
+
+/* ─── Category tile active ───────────────────────────── */
+.category-tile:active {
+  transform: scale(0.97);
+  box-shadow: none;
+}
+
+/* ─── Filter/mood chip active ────────────────────────── */
+.filter-chip:active,
+.mood-chip:active,
+.tag-chip:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+}
+
+/* ─── Scroll-reveal utility (CSS-only, IntersectionObserver-free) ─ */
+/* Apply .reveal class via JS or use Framer Motion whileInView.
+   These keyframes back up any element that needs a one-shot entrance. */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Sections that should animate once on scroll — add class via JS */
+.reveal {
+  animation: fadeInUp 0.5s ease both;
+}
+
+/* Staggered children helper */
+.reveal-stagger > * {
+  animation: fadeInUp 0.45s ease both;
+}
+.reveal-stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.reveal-stagger > *:nth-child(2) { animation-delay: 0.12s; }
+.reveal-stagger > *:nth-child(3) { animation-delay: 0.19s; }
+.reveal-stagger > *:nth-child(4) { animation-delay: 0.26s; }
+.reveal-stagger > *:nth-child(5) { animation-delay: 0.33s; }
+.reveal-stagger > *:nth-child(n+6) { animation-delay: 0.38s; }
+
+/* ─── Respect prefers-reduced-motion ─────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .bookmark-btn.bookmarked { animation: none; }
+  .nav-link::after          { transition: none; }
+  .reveal,
+  .reveal-stagger > *       { animation: none; }
+  .story-card,
+  .category-tile,
+  .filter-chip,
+  .mood-chip,
+  .tag-chip,
+  .ghost-link,
+  .card-button,
+  .nav-join-btn             { transition: none; }
 }

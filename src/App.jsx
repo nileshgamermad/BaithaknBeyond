@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logoDefault from './assets/logo.png';
 import {
@@ -110,20 +110,14 @@ export default function App() {
     const token = getToken();
     if (!token) return; // not logged in — nothing to validate
 
-    console.log('[Auth] Token found in storage, validating session…');
     getMe(token)
       .then((freshUser) => {
-        // Server confirmed the token is valid — update with latest user data
-        // (name / avatar may have changed). Keep the token in the object so
-        // the stored shape stays consistent.
-        console.log('[Auth] Session valid ✓  user:', freshUser.email, ' id:', freshUser._id);
         const merged = { ...freshUser, token };
         setCurrentUser(merged);
         try { localStorage.setItem('baithak-user', JSON.stringify(merged)); } catch {}
       })
-      .catch((err) => {
-        // 401 → token expired or tampered. Sign the user out.
-        console.warn('[Auth] Session invalid, signing out:', err.message);
+      .catch(() => {
+        // Token expired or tampered — sign the user out silently.
         clearToken();
         try { localStorage.removeItem('baithak-user'); } catch {}
         setCurrentUser(null);
@@ -215,11 +209,21 @@ export default function App() {
     return () => document.body.classList.remove("modal-open");
   }, [modalStoryId]);
 
-  // Scroll: back to top
+  // Scroll: back to top — throttled with rAF so it fires at most once per frame
   useEffect(() => {
-    const handle = () => setShowBackToTop(window.scrollY > 400);
+    let rafId = null;
+    const handle = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        setShowBackToTop(window.scrollY > 400);
+        rafId = null;
+      });
+    };
     window.addEventListener("scroll", handle, { passive: true });
-    return () => window.removeEventListener("scroll", handle);
+    return () => {
+      window.removeEventListener("scroll", handle);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   // Skeleton
@@ -236,21 +240,11 @@ export default function App() {
     if (!currentUser?._id) { setBookmarks([]); return; }
 
     const token = getToken();
-    if (!token) {
-      console.warn('[Bookmarks] currentUser present but no token — cannot fetch');
-      return;
-    }
+    if (!token) return;
 
-    console.log('[Bookmarks] Fetching for', currentUser.email, '(id:', currentUser._id + ')');
     fetchBookmarks(token)
-      .then((ids) => {
-        console.log('[Bookmarks] Loaded', ids.length, 'saved post(s):', ids);
-        setBookmarks(ids);
-      })
-      .catch((err) => {
-        console.error('[Bookmarks] Fetch failed:', err.message);
-        setBookmarks([]);
-      });
+      .then((ids) => setBookmarks(ids))
+      .catch(() => setBookmarks([]));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?._id]); // only re-run when the logged-in account changes
 
@@ -269,8 +263,7 @@ export default function App() {
         setCollections(nextCollections);
         setUserStats(nextStats);
       })
-      .catch((err) => {
-        console.error('[Ownership] Fetch failed:', err.message);
+      .catch(() => {
         setCollections([]);
         setUserStats({ savedPostsCount: 0, postsReadCount: 0, collectionsCount: 0 });
       });
@@ -360,18 +353,27 @@ export default function App() {
     [filteredStories, visibleStoryCount]
   );
 
-  const selectedStory = stories.find((s) => s.id === selectedStoryId) ?? stories[0];
-  const modalStory   = stories.find((s) => s.id === modalStoryId)   ?? selectedStory;
-  const saveOptionsStory = stories.find((s) => s.id === saveOptionsStoryId) ?? null;
+  const selectedStory = useMemo(
+    () => stories.find((s) => s.id === selectedStoryId) ?? stories[0],
+    [stories, selectedStoryId]
+  );
+  const modalStory = useMemo(
+    () => stories.find((s) => s.id === modalStoryId) ?? selectedStory,
+    [stories, modalStoryId, selectedStory]
+  );
+  const saveOptionsStory = useMemo(
+    () => stories.find((s) => s.id === saveOptionsStoryId) ?? null,
+    [stories, saveOptionsStoryId]
+  );
   const plannerKey        = `${planner.mood}-${planner.time}`;
   const plannerSuggestion = plannerSuggestions[plannerKey];
   const q = searchTerm.trim();
 
-  const jumpToSection = (id) => {
+  const jumpToSection = useCallback((id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
     setActiveSection(id);
     setMenuOpen(false);
-  };
+  }, []);
 
   const applySearchSuggestion = (suggestion) => {
     if (suggestion.type === 'post') {
@@ -427,7 +429,7 @@ export default function App() {
     }
   };
 
-  const openStory = (storyId) => {
+  const openStory = useCallback((storyId) => {
     setSelectedStoryId(storyId);
     setModalStoryId(storyId);
     // Prepend to reading history, keep max 6 unique entries
@@ -446,7 +448,10 @@ export default function App() {
       const story = stories.find((s) => s.id === storyId);
       if (story?.category) recordInteraction(token, { storyId, category: story.category, type: 'view' });
     }
-  };
+  // stories and currentUser intentionally omitted: stale-closure is acceptable
+  // for a fire-and-forget interaction recorder; the story lookup is best-effort.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const createCollection = async (name) => {
     if (!currentUser) {
@@ -469,14 +474,12 @@ export default function App() {
 
   const commitBookmark = async (storyId, shouldSave) => {
     if (!currentUser) {
-      console.log('[Bookmark] Not signed in — opening auth modal');
       setAuthOpen(true);
       throw new Error('Sign in to save stories.');
     }
 
     const token = getToken();
     if (!token) {
-      console.warn('[Bookmark] currentUser set but no token found — opening auth modal');
       setAuthOpen(true);
       throw new Error('Sign in to save stories.');
     }
@@ -494,8 +497,6 @@ export default function App() {
 
     try {
       const updated = await toggleBookmarkApi(token, storyId);
-      console.log('[Bookmark] Toggled', storyId, '→', shouldSave ? 'saved' : 'removed',
-                  '| total saved:', updated.length);
       setBookmarks(updated);
       setUserStats((stats) => ({ ...stats, savedPostsCount: updated.length }));
       showToast(shouldSave ? '★  Saved to your collection' : 'Removed from saved');
@@ -505,7 +506,7 @@ export default function App() {
       }
       return updated;
     } catch (err) {
-      console.error('[Bookmark] API call failed, rolling back:', err.message);
+      // Optimistic update failed — roll back
       setBookmarks(snapshot);
       setUserStats((stats) => ({ ...stats, savedPostsCount: snapshot.length }));
       throw err;
