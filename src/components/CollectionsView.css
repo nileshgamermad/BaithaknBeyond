@@ -79,13 +79,21 @@
 }
 
 .collections-create-form {
-  display: grid;
-  grid-template-columns: 1fr auto;
+  /* Flex keeps the button contained and the input filling the rest.
+     Grid auto columns can overflow when button text + padding is wide. */
+  display: flex;
+  align-items: stretch;
   gap: 10px;
   margin-top: 18px;
+  width: 100%;
+  box-sizing: border-box;
+  /* Prevent any child from punching outside the sidebar */
+  overflow: hidden;
 }
 
 .collections-create-form input {
+  flex: 1 1 0;       /* grows to fill available width */
+  min-width: 0;      /* critical: prevents grid/flex overflow */
   min-height: 46px;
   padding: 0 14px;
   border: 1px solid var(--border);
@@ -96,11 +104,26 @@
   font-size: 0.875rem;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   outline: none;
+  box-sizing: border-box;
 }
 
 .collections-create-form input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+/* Compact button variant scoped to the create form —
+   overrides the global .card-button large-size defaults */
+.collections-create-form .card-button {
+  flex-shrink: 0;       /* never compress the button text */
+  width: auto;          /* do NOT stretch to 100% (mobile override) */
+  min-height: 46px;
+  padding: 10px 20px;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  align-self: stretch;
+  box-sizing: border-box;
 }
 
 .collections-error {

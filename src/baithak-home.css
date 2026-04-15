@@ -2121,21 +2121,53 @@ body[data-theme="dark"] .category-tile.active {
    ═══════════════════════════════════════════════════════ */
 
 .story-card--featured {
+  /* minmax(0, 1fr) is critical: pure `1fr` allows a column to grow beyond
+     its track when content is larger than the grid container.
+     minmax(0, 1fr) sets the minimum to 0, so the column cannot overflow.  */
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   cursor: default;
   min-height: 380px;
+  overflow: hidden;   /* belt-and-suspenders: clip anything that still bleeds */
 }
 
+/* Image column: fill the full row height, never overflow its track */
 .story-card--featured .story-media {
-  min-height: 100%;
+  overflow: hidden;   /* clip the image inside the column boundary */
+  height: 100%;
+  min-height: 0;      /* let the grid control height, not the image */
 }
 
 .story-card--featured .story-media img {
   aspect-ratio: unset;
+  width: 100%;
   height: 100%;
   min-height: 340px;
   object-fit: cover;
+  display: block;
+}
+
+/* Text column: keep content from overflowing on narrow viewports */
+.story-card--featured .story-copy {
+  overflow: hidden;
+  align-content: center;
+  padding: 36px 40px;
+  gap: 18px;
+  min-width: 0;       /* prevent flex/grid blowout inside the copy column */
+}
+
+.story-card--featured .story-copy h3 {
+  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+  line-height: 1.05;
+  /* Prevent very long titles from pushing the column wider */
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.story-card--featured .story-copy p {
+  font-size: 0.84rem;
+  max-width: 46ch;
+  line-height: 1.88;
 }
 
 /* Stronger overlay on featured for better title contrast */
@@ -2147,21 +2179,27 @@ body[data-theme="dark"] .category-tile.active {
   );
 }
 
-.story-card--featured .story-copy {
-  align-content: center;
-  padding: 36px 40px;
-  gap: 18px;
-}
+/* Mobile: stack image above text — no more side-by-side layout */
+@media (max-width: 768px) {
+  .story-card--featured {
+    grid-template-columns: 1fr;   /* single column */
+    min-height: unset;
+  }
 
-.story-card--featured .story-copy h3 {
-  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
-  line-height: 1.05;
-}
+  .story-card--featured .story-media {
+    height: auto;
+  }
 
-.story-card--featured .story-copy p {
-  font-size: 0.84rem;
-  max-width: 46ch;
-  line-height: 1.88;
+  .story-card--featured .story-media img {
+    height: 240px;
+    min-height: unset;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  .story-card--featured .story-copy {
+    padding: 24px 22px 28px;
+  }
 }
 
 .featured-eyebrow {
@@ -2505,34 +2543,57 @@ body[data-theme="dark"] .trending-card {
    CATEGORY PREVIEW
    ═══════════════════════════════════════════════════════ */
 
+/* Bootstrap row doesn't auto-stretch children to equal height.
+   Force equal-height columns so every card in the same row is identical. */
+.category-preview-grid {
+  align-items: stretch !important;  /* overrides Bootstrap's default */
+}
+
+/* Each Bootstrap col becomes a flex container so the card can fill it */
+.category-preview-grid > [class*="col"] {
+  display: flex;
+}
+
 .category-preview-card {
+  /* Fill the Bootstrap column so all cards in a row are equal height */
   width: 100%;
+  height: 100%;
   padding: 0;
   border: none;
   background: none;
   cursor: pointer;
   border-radius: var(--radius-xl);
   overflow: hidden;
+  /* Column flex: image is fixed-height, copy stretches to fill the rest */
   display: flex;
   flex-direction: column;
   text-align: left;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transition: box-shadow 0.25s ease;
+  transition: box-shadow 0.28s ease, transform 0.28s ease;
 }
 
 .category-preview-card:hover {
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.15);
 }
 
+/* Fixed-height image container — aspect-ratio on the wrapper, not the img,
+   so it stays locked regardless of the natural image dimensions.           */
 .category-preview-img {
   position: relative;
   overflow: hidden;
+  /* 4:3 aspect ratio locks all image areas to the same height */
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  flex-shrink: 0;
 }
 
+/* img fills the container absolutely — no layout-shift, no cropping issues */
 .category-preview-img img {
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
+  position: absolute;
+  inset: 0;
   width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
   transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -2544,18 +2605,18 @@ body[data-theme="dark"] .trending-card {
   inset: 0;
   background: linear-gradient(to top, rgba(10, 5, 3, 0.62) 0%, rgba(10, 5, 3, 0.08) 55%, transparent 100%);
   pointer-events: none;
+  z-index: 1;
 }
 
+/* Copy stretches to fill remaining card height so all cards align */
 .category-preview-copy {
   padding: 14px 16px 18px;
-  background: #FFFFFF;
+  background: var(--surface);
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
-
-body[data-theme="dark"] .category-preview-copy {
-  background: #13151F;
+  flex: 1;           /* grow to fill space left after the image */
+  min-height: 0;     /* allow shrink in constrained grids */
 }
 
 .category-preview-name {
