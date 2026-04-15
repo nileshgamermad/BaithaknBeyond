@@ -71,6 +71,22 @@ export const toggleBookmarkApi = async (token, storyId) => {
   return res.json();
 };
 
+// ── Personalization ───────────────────────────────────────────────────────────
+
+// Fire-and-forget: records a story interaction for personalization scoring.
+// Never throws — caller doesn't need to await or handle errors.
+export const recordInteraction = (token, { storyId, category, type }) => {
+  if (!token || !storyId || !category || !type) return;
+  fetch(`${BASE}/interactions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ storyId, category, type }),
+  }).catch(() => {}); // silently swallow network errors
+};
+
 // ── Token helpers ─────────────────────────────────────────────────────────────
 
 export const saveToken  = (token) => localStorage.setItem('baithak-token', token);

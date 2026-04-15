@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logoDefault from './assets/logo.png';
 import { sections, plannerOptions, plannerSuggestions, mapStops, categories, stories as staticStories } from './data/index.js';
-import { fetchStories, clearToken, getToken, getMe, fetchBookmarks, toggleBookmarkApi } from './api/index.js';
+import { fetchStories, clearToken, getToken, getMe, fetchBookmarks, toggleBookmarkApi, recordInteraction } from './api/index.js';
 import AuthModal from './components/AuthModal.jsx';
 import ProfileDropdown from './components/ProfileDropdown.jsx';
 
@@ -218,6 +218,47 @@ export default function App() {
     [bookmarks, stories]
   );
 
+  // ── Personalization ──────────────────────────────────────────────────────
+  // Compute per-category affinity scores entirely client-side from the two
+  // signals we already have: bookmarks (weight 2) and reading history (weight 1).
+  // No extra network request needed — scores update instantly as the user
+  // saves/views stories. Backend records the same events for future server-side use.
+  const categoryScores = useMemo(() => {
+    const scores = {};
+    bookmarks.forEach((id) => {
+      const s = stories.find((x) => x.id === id);
+      if (s?.category) scores[s.category] = (scores[s.category] || 0) + 2;
+    });
+    recentlyViewed.forEach((id) => {
+      const s = stories.find((x) => x.id === id);
+      if (s?.category) scores[s.category] = (scores[s.category] || 0) + 1;
+    });
+    return scores; // e.g. { food: 5, history: 2 }
+  }, [bookmarks, recentlyViewed, stories]);
+
+  // "For You" — stories that match the user's top categories, sorted by affinity.
+  // Only populated once the user has at least one saved or viewed story.
+  const forYouStories = useMemo(() => {
+    if (!Object.keys(categoryScores).length) return [];
+    return [...stories]
+      .filter((s) => (categoryScores[s.category] || 0) > 0)
+      .sort((a, b) => (categoryScores[b.category] || 0) - (categoryScores[a.category] || 0))
+      .slice(0, 4);
+  }, [categoryScores, stories]);
+
+  // "Because You Liked X" — one group per top-2 categories, showing up to 3 stories each.
+  const becauseYouLiked = useMemo(() => {
+    return Object.entries(categoryScores)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 2)
+      .map(([cat]) => ({
+        category: cat,
+        label: categories.find((c) => c.id === cat)?.label || cat,
+        stories: stories.filter((s) => s.category === cat).slice(0, 3),
+      }))
+      .filter((g) => g.stories.length > 0);
+  }, [categoryScores, stories, categories]);
+
   const filteredStories = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
     return stories.filter((story) => {
@@ -255,6 +296,12 @@ export default function App() {
       try { localStorage.setItem('baithak-recent', JSON.stringify(updated)); } catch {}
       return updated;
     });
+    // Record view interaction for personalisation (fire-and-forget, logged-in only)
+    const token = getToken();
+    if (token) {
+      const story = stories.find((s) => s.id === storyId);
+      if (story?.category) recordInteraction(token, { storyId, category: story.category, type: 'view' });
+    }
   };
 
   const toggleBookmark = async (storyId) => {
@@ -287,6 +334,11 @@ export default function App() {
                   '| total saved:', updated.length);
       setBookmarks(updated);
       showToast(wasBookmarked ? 'Removed from saved' : '★  Saved to your collection');
+      // Record bookmark interaction for personalisation
+      const story = stories.find((s) => s.id === storyId);
+      if (story?.category) {
+        recordInteraction(token, { storyId, category: story.category, type: wasBookmarked ? 'unbookmark' : 'bookmark' });
+      }
     } catch (err) {
       console.error('[Bookmark] API call failed, rolling back:', err.message);
       setBookmarks(snapshot); // restore exact pre-click state
@@ -589,6 +641,73 @@ export default function App() {
 
         {/* ─── MAIN ─── */}
         <main className="container site-container page-content">
+
+          {/* ─── For You ─── */}
+          {forYouStories.length > 0 && (
+            <motion.section
+              className="section-stack for-you-section"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.55, ease }}
+            >
+              <div className="section-heading">
+                <div>
+                  <p className="section-kicker for-you-kicker">
+                    {currentUser ? `Picked for you, ${currentUser.name?.split(' ')[0]}` : 'Based on your reading'}
+                  </p>
+                  <h2 className="for-you-heading">
+                    <span className="for-you-spark" aria-hidden="true">✦</span> For You
+                  </h2>
+                </div>
+                <span className="for-you-hint">
+                  {Object.keys(categoryScores).length === 1
+                    ? `You enjoy ${categories.find((c) => c.id === Object.keys(categoryScores)[0])?.label || Object.keys(categoryScores)[0]}`
+                    : `${Object.keys(categoryScores).length} interests detected`}
+                </span>
+              </div>
+
+              <div className="trending-strip">
+                {forYouStories.map((story, i) => (
+                  <motion.article
+                    key={story.id}
+                    className="trending-card"
+                    initial={{ opacity: 0, y: 18 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.45, delay: i * 0.07, ease }}
+                    whileHover={{ y: -5, transition: { duration: 0.25, ease } }}
+                    onClick={() => openStory(story.id)}
+                  >
+                    <div className="trending-card-media">
+                      <img src={story.image} alt={story.alt} loading="lazy" />
+                      <div className="trending-overlay" />
+                      <div className="trending-badges">
+                        <span className="label-badge badge-for-you">For You</span>
+                        <span className="read-pill">{story.readTime}</span>
+                      </div>
+                      <motion.button
+                        type="button"
+                        className={`bookmark-btn ${bookmarks.includes(story.id) ? 'bookmarked' : ''}`}
+                        aria-label={bookmarks.includes(story.id) ? 'Remove bookmark' : 'Bookmark'}
+                        onClick={(e) => { e.stopPropagation(); toggleBookmark(story.id); }}
+                        whileHover={{ scale: 1.22 }}
+                        whileTap={{ scale: 0.85 }}
+                        style={{ position: 'absolute', top: 12, right: 12, zIndex: 2 }}
+                      >
+                        {bookmarks.includes(story.id) ? '★' : '☆'}
+                      </motion.button>
+                    </div>
+                    <div className="trending-card-copy">
+                      <p className="story-location">{story.location}</p>
+                      <h3>{story.title}</h3>
+                      <p>{story.summary}</p>
+                    </div>
+                  </motion.article>
+                ))}
+              </div>
+            </motion.section>
+          )}
 
           {/* ─── Continue Reading / Recently Viewed ─── */}
           {recentStories.length > 0 && (
@@ -1061,6 +1180,78 @@ export default function App() {
                   </div>
                 </div>
               </div>
+            </section>
+          )}
+
+          {/* ─── Because You Liked ─── */}
+          {becauseYouLiked.length > 0 && (
+            <section className="section-stack because-section">
+              {becauseYouLiked.map((group, gi) => (
+                <motion.div
+                  key={group.category}
+                  className="because-group"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.55, delay: gi * 0.12, ease }}
+                >
+                  <div className="because-group-header">
+                    <div>
+                      <p className="section-kicker">Based on your activity</p>
+                      <h2 className="because-heading">
+                        More like <span className="because-category">{group.label}</span>
+                      </h2>
+                    </div>
+                    <button
+                      type="button"
+                      className="ghost-link"
+                      onClick={() => { setActiveFilter(group.category); setActiveTag(''); jumpToSection('stories'); }}
+                    >
+                      See all →
+                    </button>
+                  </div>
+
+                  <div className="trending-strip">
+                    {group.stories.map((story, i) => (
+                      <motion.article
+                        key={story.id}
+                        className="trending-card"
+                        initial={{ opacity: 0, y: 18 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.45, delay: i * 0.07, ease }}
+                        whileHover={{ y: -5, transition: { duration: 0.25, ease } }}
+                        onClick={() => openStory(story.id)}
+                      >
+                        <div className="trending-card-media">
+                          <img src={story.image} alt={story.alt} loading="lazy" />
+                          <div className="trending-overlay" />
+                          <div className="trending-badges">
+                            <span className="label-badge badge-because">{group.label}</span>
+                            <span className="read-pill">{story.readTime}</span>
+                          </div>
+                          <motion.button
+                            type="button"
+                            className={`bookmark-btn ${bookmarks.includes(story.id) ? 'bookmarked' : ''}`}
+                            aria-label={bookmarks.includes(story.id) ? 'Remove bookmark' : 'Bookmark'}
+                            onClick={(e) => { e.stopPropagation(); toggleBookmark(story.id); }}
+                            whileHover={{ scale: 1.22 }}
+                            whileTap={{ scale: 0.85 }}
+                            style={{ position: 'absolute', top: 12, right: 12, zIndex: 2 }}
+                          >
+                            {bookmarks.includes(story.id) ? '★' : '☆'}
+                          </motion.button>
+                        </div>
+                        <div className="trending-card-copy">
+                          <p className="story-location">{story.location}</p>
+                          <h3>{story.title}</h3>
+                          <p>{story.summary}</p>
+                        </div>
+                      </motion.article>
+                    ))}
+                  </div>
+                </motion.div>
+              ))}
             </section>
           )}
 

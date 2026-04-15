@@ -2733,3 +2733,131 @@ body[data-theme="dark"] .toast-success {
   .saved-panel-body     { padding: 16px 16px 28px; }
   .toast-notification   { width: calc(100% - 32px); justify-content: center; font-size: 0.8rem; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PERSONALISATION — For You + Because You Liked
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── For You section ──────────────────────────────────────────────────────── */
+
+.for-you-section {
+  padding-top: 2rem;
+  border-top: 2px solid var(--accent, #8B1E1E);
+  position: relative;
+}
+
+.for-you-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 56px; height: 2px;
+  background: var(--gold, #C49A6C);
+}
+
+.for-you-kicker {
+  color: var(--accent, #8B1E1E) !important;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+body[data-theme="dark"] .for-you-kicker {
+  color: #a87cf5 !important;
+}
+
+.for-you-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.for-you-spark {
+  font-size: 0.9em;
+  color: var(--gold, #C49A6C);
+  animation: sparkPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes sparkPulse {
+  0%, 100% { opacity: 1;   transform: scale(1);    }
+  50%       { opacity: 0.6; transform: scale(1.18); }
+}
+
+.for-you-hint {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(61, 24, 15, 0.48);
+  align-self: flex-end;
+  padding-bottom: 4px;
+  white-space: nowrap;
+}
+
+body[data-theme="dark"] .for-you-hint {
+  color: rgba(216, 223, 240, 0.42);
+}
+
+/* ── For You badge ─────────────────────────────────────────────────────────── */
+
+.badge-for-you {
+  background: linear-gradient(135deg, #6d28d9, #a87cf5);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(109, 40, 217, 0.35);
+}
+
+body[data-theme="dark"] .badge-for-you {
+  background: linear-gradient(135deg, #7c3aed, #c4b5fd);
+  color: #1a0a2e;
+}
+
+/* ── Because You Liked section ───────────────────────────────────────────── */
+
+.because-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.because-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.because-group-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.because-heading {
+  font-size: clamp(1.15rem, 2.5vw, 1.55rem);
+}
+
+.because-category {
+  color: var(--accent, #8B1E1E);
+  font-style: italic;
+}
+
+body[data-theme="dark"] .because-category {
+  color: #a87cf5;
+}
+
+/* ── Because badge ─────────────────────────────────────────────────────────── */
+
+.badge-because {
+  background: var(--gold, #C49A6C);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(196, 154, 108, 0.35);
+}
+
+body[data-theme="dark"] .badge-because {
+  background: rgba(196, 154, 108, 0.85);
+  color: #1a0f00;
+}
+
+/* ── Mobile ──────────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .for-you-section { padding-top: 1.5rem; }
+  .for-you-hint    { display: none; }
+  .because-group-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+}
