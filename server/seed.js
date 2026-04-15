@@ -20,6 +20,7 @@ const stories = [
     readTime: '6 min read',
     accent: '',
     tags: ['heritage', 'riverside', 'spiritual', 'sunrise'],
+    discoveryMoods: ['heritage', 'hidden-gems'],
     mapEmbed: 'https://www.google.com/maps?q=25.423,81.878&z=15&output=embed',
   },
   {
@@ -37,6 +38,7 @@ const stories = [
     readTime: '5 min read',
     accent: '',
     tags: ['heritage', 'mughal', 'architecture', 'history'],
+    discoveryMoods: ['heritage', 'hidden-gems'],
     mapEmbed: 'https://www.google.com/maps?q=25.429,81.867&z=16&output=embed',
   },
   {
@@ -54,6 +56,7 @@ const stories = [
     readTime: '4 min read',
     accent: 'gold',
     tags: ['food', 'breakfast', 'street food', 'local favourite'],
+    discoveryMoods: ['food-trails', 'hidden-gems'],
     mapEmbed: 'https://www.google.com/maps?q=25.434,81.829&z=16&output=embed',
   },
   {
@@ -71,6 +74,7 @@ const stories = [
     readTime: '5 min read',
     accent: 'gold',
     tags: ['food', 'street food', 'chaat', 'evening'],
+    discoveryMoods: ['food-trails', 'evening-vibes'],
     mapEmbed: 'https://www.google.com/maps?q=25.438,81.832&z=16&output=embed',
   },
 ];

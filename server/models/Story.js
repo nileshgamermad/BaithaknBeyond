@@ -16,6 +16,7 @@ const storySchema = new mongoose.Schema(
     readTime:      String,
     accent:        String,
     tags:          [String],
+    discoveryMoods:[String],
     mapEmbed:      String,
   },
   { timestamps: true }

@@ -32,7 +32,7 @@ export default function CollectionsApp() {
 
   useEffect(() => {
     fetchStories()
-      .then((data) => setStories(data.length ? data : staticStories))
+      .then((data) => setStories(data.items?.length ? data.items : staticStories))
       .catch(() => setStories(staticStories));
   }, []);
 

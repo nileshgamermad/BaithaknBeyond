@@ -17,6 +17,15 @@ export default function ArticleHero({ article, readTimeLabel, publishedLabel }) 
           <span>{publishedLabel}</span>
           <span>{readTimeLabel}</span>
         </div>
+        {article.tags?.length > 0 && (
+          <div className="article-hero__tags">
+            {article.tags.map((tag) => (
+              <a key={tag} className="article-hero__tag" href={`../tags/${tag.toLowerCase().replace(/\s+/g, '-')}/`}>
+                {tag}
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     </header>
   );

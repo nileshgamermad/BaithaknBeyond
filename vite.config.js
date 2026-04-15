@@ -12,6 +12,7 @@ export default defineConfig(({ command }) => ({
       input: {
         main: resolveFromRoot('index.html'),
         collections: resolveFromRoot('collections/index.html'),
+        tags: resolveFromRoot('tags/index.html'),
         triveniSangam: resolveFromRoot('posts/triveni-sangam.html'),
         allahabadFort: resolveFromRoot('posts/allahabad-fort.html'),
         netramKachori: resolveFromRoot('posts/netram-kachori.html'),

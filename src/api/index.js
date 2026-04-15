@@ -2,15 +2,44 @@ const BASE = import.meta.env.VITE_API_URL || 'https://baithakn-beyond-backend.on
 
 // ── Stories ──────────────────────────────────────────────────────────────────
 
-export const fetchStories = async () => {
-  const res = await fetch(`${BASE}/stories`);
+export const fetchStories = async (params = {}) => {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') searchParams.set(key, value);
+  });
+
+  const suffix = searchParams.toString() ? `?${searchParams.toString()}` : '';
+  const res = await fetch(`${BASE}/stories${suffix}`);
   if (!res.ok) throw new Error('Failed to fetch stories');
-  return res.json();
+  const data = await res.json();
+  if (Array.isArray(data)) {
+    return { items: data, total: data.length, hasMore: false };
+  }
+  return data;
 };
 
 export const fetchStory = async (id) => {
   const res = await fetch(`${BASE}/stories/${id}`);
   if (!res.ok) throw new Error('Story not found');
+  return res.json();
+};
+
+export const fetchStorySuggestions = async (query) => {
+  if (!query?.trim()) return { posts: [], categories: [], tags: [] };
+  const res = await fetch(`${BASE}/stories/search/suggestions?q=${encodeURIComponent(query.trim())}`);
+  if (!res.ok) return { posts: [], categories: [], tags: [] };
+  return res.json();
+};
+
+export const fetchRelatedStories = async (id) => {
+  const res = await fetch(`${BASE}/stories/related/${id}`);
+  if (!res.ok) return [];
+  return res.json();
+};
+
+export const fetchTags = async () => {
+  const res = await fetch(`${BASE}/stories/tags`);
+  if (!res.ok) return [];
   return res.json();
 };
 

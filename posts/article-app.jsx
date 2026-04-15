@@ -3,6 +3,8 @@ import ArticleHero from './components/ArticleHero.jsx';
 import ArticleContent from './components/ArticleContent.jsx';
 import ReadingProgress from './components/ReadingProgress.jsx';
 import SaveButton from './components/SaveButton.jsx';
+import { stories as allStories } from '../src/data/index.js';
+import { getRelatedStories } from '../src/discovery.js';
 
 function getReadTimeLabel(html) {
   const plainText = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -22,10 +24,18 @@ function getPublishedLabel(publishedAt) {
   });
 }
 
-export default function ArticleApp({ article, contentHtml, noteHtml, mapHtml, relatedHtml }) {
+export default function ArticleApp({ article, contentHtml, noteHtml, mapHtml }) {
   const articleRef = useRef(null);
   const readTimeLabel = useMemo(() => getReadTimeLabel(contentHtml), [contentHtml]);
   const publishedLabel = useMemo(() => getPublishedLabel(article.publishedAt), [article.publishedAt]);
+  const storyMeta = useMemo(
+    () => allStories.find((story) => story.id === article.storyId) || article,
+    [article]
+  );
+  const relatedStories = useMemo(
+    () => getRelatedStories(allStories, storyMeta, 3),
+    [storyMeta]
+  );
 
   useEffect(() => {
     document.body.dataset.theme = localStorage.getItem('baithak-theme') || 'light';
@@ -43,7 +53,7 @@ export default function ArticleApp({ article, contentHtml, noteHtml, mapHtml, re
         </div>
 
         <ArticleHero
-          article={article}
+          article={{ ...article, tags: storyMeta.tags || [] }}
           readTimeLabel={readTimeLabel}
           publishedLabel={publishedLabel}
         />
@@ -56,10 +66,17 @@ export default function ArticleApp({ article, contentHtml, noteHtml, mapHtml, re
           />
         </section>
 
-        <section
-          className="article-related"
-          dangerouslySetInnerHTML={{ __html: relatedHtml }}
-        />
+        <section className="article-related">
+          <h2>You may also like</h2>
+          <div className="related-grid">
+            {relatedStories.map((story) => (
+              <a key={story.id} className="related-card" href={story.slug}>
+                <span className="related-category">{story.categoryLabel}</span>
+                <strong>{story.title}</strong>
+              </a>
+            ))}
+          </div>
+        </section>
       </main>
 
       <button className="theme-switch" type="button" id="themeSwitch" aria-label="Toggle theme">

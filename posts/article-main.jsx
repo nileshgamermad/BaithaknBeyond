@@ -9,9 +9,8 @@ const articleDataNode = document.getElementById('article-data');
 const articleBodyNode = document.getElementById('article-body');
 const articleNoteNode = document.getElementById('article-note');
 const articleMapNode = document.getElementById('article-map');
-const articleRelatedNode = document.getElementById('article-related');
 
-if (root && articleDataNode && articleBodyNode && articleNoteNode && articleMapNode && articleRelatedNode) {
+if (root && articleDataNode && articleBodyNode && articleNoteNode && articleMapNode) {
   const article = JSON.parse(articleDataNode.textContent || '{}');
 
   createRoot(root).render(
@@ -21,7 +20,6 @@ if (root && articleDataNode && articleBodyNode && articleNoteNode && articleMapN
         contentHtml={articleBodyNode.innerHTML}
         noteHtml={articleNoteNode.innerHTML}
         mapHtml={articleMapNode.innerHTML}
-        relatedHtml={articleRelatedNode.innerHTML}
       />
     </StrictMode>
   );

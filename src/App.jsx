@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logoDefault from './assets/logo.png';
-import { sections, plannerOptions, plannerSuggestions, mapStops, categories, stories as staticStories } from './data/index.js';
+import {
+  sections,
+  plannerOptions,
+  plannerSuggestions,
+  mapStops,
+  categories,
+  discoveryMoods,
+  stories as staticStories,
+} from './data/index.js';
 import {
   fetchStories,
   clearToken,
@@ -14,6 +22,7 @@ import {
   createCollectionApi,
   addPostToCollectionApi,
   fetchUserStats,
+  fetchStorySuggestions,
 } from './api/index.js';
 import AuthModal from './components/AuthModal.jsx';
 import ProfileDropdown from './components/ProfileDropdown.jsx';
@@ -53,6 +62,8 @@ export default function App() {
   const [modalStoryId, setModalStoryId] = useState("");
   const [planner, setPlanner] = useState({ mood: "food", time: "morning" });
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchSuggestions, setSearchSuggestions] = useState({ posts: [], categories: [], tags: [] });
+  const [searchOpen, setSearchOpen] = useState(false);
   const [logoSrc, setLogoSrc] = useState(logoDefault);
   const [bookmarks, setBookmarks] = useState([]);
   const [toast, setToast] = useState(null);
@@ -69,8 +80,11 @@ export default function App() {
   const [email, setEmail] = useState("");
   const [emailSubmitted, setEmailSubmitted] = useState(false);
   const [activeTag, setActiveTag] = useState("");
+  const [activeMood, setActiveMood] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [stories, setStories] = useState(staticStories);
+  const [visibleStoryCount, setVisibleStoryCount] = useState(4);
+  const [storyResultMeta, setStoryResultMeta] = useState({ total: staticStories.length, hasMore: false });
   const [authOpen, setAuthOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(() => {
@@ -118,11 +132,33 @@ export default function App() {
 
   // Fetch stories from API, fall back to static data
   useEffect(() => {
-    fetchStories()
-      .then((data) => setStories(data.length ? data : staticStories))
-      .catch(() => setStories(staticStories))
+    fetchStories({ limit: 8, offset: 0 })
+      .then((data) => {
+        const nextStories = data.items?.length ? data.items : staticStories;
+        setStories(nextStories);
+        setStoryResultMeta({ total: data.total ?? nextStories.length, hasMore: Boolean(data.hasMore) });
+      })
+      .catch(() => {
+        setStories(staticStories);
+        setStoryResultMeta({ total: staticStories.length, hasMore: false });
+      })
       .finally(() => setIsLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setSearchSuggestions({ posts: [], categories: [], tags: [] });
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      fetchStorySuggestions(searchTerm)
+        .then((data) => setSearchSuggestions(data))
+        .catch(() => setSearchSuggestions({ posts: [], categories: [], tags: [] }));
+    }, 180);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
 
   // Section intersection observer
   useEffect(() => {
@@ -240,11 +276,15 @@ export default function App() {
       });
   }, [currentUser?._id]);
 
+  useEffect(() => {
+    setVisibleStoryCount(4);
+  }, [activeFilter, activeTag, activeMood, searchTerm]);
+
   const allTags = useMemo(() => {
     const set = new Set();
     stories.forEach((s) => s.tags?.forEach((t) => set.add(t)));
     return [...set];
-  }, []);
+  }, [stories]);
 
   const trendingStories = useMemo(() => stories.filter((s) => s.trending), [stories]);
   const editorsPicks    = useMemo(() => stories.filter((s) => s.editorsPick), [stories]);
@@ -306,13 +346,19 @@ export default function App() {
           ? bookmarks.includes(story.id)
           : activeFilter === "all" || story.category === activeFilter;
       const matchesTag = !activeTag || story.tags?.includes(activeTag);
+      const matchesMood = !activeMood || story.discoveryMoods?.includes(activeMood);
       const matchesSearch =
         !query ||
         [story.title, story.summary, story.detail, story.location, story.categoryLabel]
           .join(" ").toLowerCase().includes(query);
-      return matchesFilter && matchesTag && matchesSearch;
+      return matchesFilter && matchesTag && matchesMood && matchesSearch;
     });
-  }, [activeFilter, searchTerm, activeTag, bookmarks]);
+  }, [stories, activeFilter, searchTerm, activeTag, activeMood, bookmarks]);
+
+  const visibleStories = useMemo(
+    () => filteredStories.slice(0, visibleStoryCount),
+    [filteredStories, visibleStoryCount]
+  );
 
   const selectedStory = stories.find((s) => s.id === selectedStoryId) ?? stories[0];
   const modalStory   = stories.find((s) => s.id === modalStoryId)   ?? selectedStory;
@@ -325,6 +371,60 @@ export default function App() {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
     setActiveSection(id);
     setMenuOpen(false);
+  };
+
+  const applySearchSuggestion = (suggestion) => {
+    if (suggestion.type === 'post') {
+      setSearchOpen(false);
+      setSearchTerm(suggestion.title);
+      jumpToSection('stories');
+      openStory(suggestion.id);
+      return;
+    }
+
+    if (suggestion.type === 'category') {
+      setActiveFilter(suggestion.id);
+      setSearchTerm('');
+      setSearchOpen(false);
+      jumpToSection('stories');
+      return;
+    }
+
+    if (suggestion.type === 'tag') {
+      setActiveTag(suggestion.value);
+      setSearchTerm('');
+      setSearchOpen(false);
+      jumpToSection('stories');
+    }
+  };
+
+  const loadMoreStories = async () => {
+    const isDefaultFeed =
+      activeFilter === 'all' &&
+      !activeTag &&
+      !activeMood &&
+      !searchTerm.trim();
+
+    if (!isDefaultFeed) {
+      setVisibleStoryCount((count) => count + 4);
+      return;
+    }
+
+    if (!storyResultMeta.hasMore) {
+      setVisibleStoryCount((count) => count + 4);
+      return;
+    }
+
+    try {
+      const data = await fetchStories({ limit: 8, offset: stories.length });
+      if (data.items?.length) {
+        setStories((prev) => [...prev, ...data.items.filter((story) => !prev.some((item) => item.id === story.id))]);
+      }
+      setStoryResultMeta({ total: data.total ?? storyResultMeta.total, hasMore: Boolean(data.hasMore) });
+      setVisibleStoryCount((count) => count + 4);
+    } catch {
+      setVisibleStoryCount((count) => count + 4);
+    }
   };
 
   const openStory = (storyId) => {
@@ -540,17 +640,79 @@ export default function App() {
             </motion.p>
 
             <motion.div variants={fadeUp} className="hero-toolbar glass-panel">
-              <label className="search-shell" aria-label="Search posts">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M10.5 3a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Zm9.2 14.8 1.4 1.4-3.4-3.4 1.4-1.4 0.6 0.6Z" />
-                </svg>
-                <input
-                  type="search"
-                  placeholder="Search stories, food spots, or landmarks"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </label>
+              <div className="search-smart">
+                <label className="search-shell" aria-label="Search posts">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M10.5 3a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Zm9.2 14.8 1.4 1.4-3.4-3.4 1.4-1.4 0.6 0.6Z" />
+                  </svg>
+                  <input
+                    type="search"
+                    placeholder="Search stories, food spots, landmarks, or tags"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onFocus={() => setSearchOpen(true)}
+                    onBlur={() => setTimeout(() => setSearchOpen(false), 140)}
+                  />
+                </label>
+                {searchOpen && searchTerm.trim() && (
+                  <div className="search-suggestions-panel" role="listbox" aria-label="Search suggestions">
+                    {searchSuggestions.posts.length === 0 && searchSuggestions.categories.length === 0 && searchSuggestions.tags.length === 0 ? (
+                      <p className="search-suggestions-empty">No quick matches yet. Try a tag, mood, or landmark.</p>
+                    ) : (
+                      <>
+                        {searchSuggestions.posts.length > 0 && (
+                          <div className="search-suggestion-group">
+                            <span className="search-suggestion-heading">Posts</span>
+                            {searchSuggestions.posts.map((post) => (
+                              <button
+                                key={post.id}
+                                type="button"
+                                className="search-suggestion-item"
+                                onMouseDown={() => applySearchSuggestion({ type: 'post', ...post })}
+                              >
+                                <strong>{post.title}</strong>
+                                <span>{post.categoryLabel}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {searchSuggestions.categories.length > 0 && (
+                          <div className="search-suggestion-group">
+                            <span className="search-suggestion-heading">Categories</span>
+                            {searchSuggestions.categories.map((category) => (
+                              <button
+                                key={category.id}
+                                type="button"
+                                className="search-suggestion-item"
+                                onMouseDown={() => applySearchSuggestion({ type: 'category', ...category })}
+                              >
+                                <strong>{category.label}</strong>
+                                <span>Category</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {searchSuggestions.tags.length > 0 && (
+                          <div className="search-suggestion-group">
+                            <span className="search-suggestion-heading">Tags</span>
+                            {searchSuggestions.tags.map((tag) => (
+                              <button
+                                key={tag}
+                                type="button"
+                                className="search-suggestion-item"
+                                onMouseDown={() => applySearchSuggestion({ type: 'tag', value: tag })}
+                              >
+                                <strong>{tag}</strong>
+                                <span>Tag</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
             </motion.div>
 
             <motion.div variants={fadeUp} className="hero-actions">
@@ -918,6 +1080,38 @@ export default function App() {
               </div>
             </motion.div>
 
+            <motion.div
+              className="mood-strip glass-panel"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.45, ease }}
+            >
+              <div className="mood-strip-copy">
+                <p className="section-kicker">Explore by mood</p>
+                <h3>Follow a vibe, not just a category.</h3>
+              </div>
+              <div className="mood-chip-row">
+                <button
+                  type="button"
+                  className={`mood-chip ${!activeMood ? 'active' : ''}`}
+                  onClick={() => setActiveMood('')}
+                >
+                  All moods
+                </button>
+                {discoveryMoods.map((mood) => (
+                  <button
+                    key={mood.id}
+                    type="button"
+                    className={`mood-chip ${activeMood === mood.id ? 'active' : ''}`}
+                    onClick={() => setActiveMood(activeMood === mood.id ? '' : mood.id)}
+                  >
+                    {mood.label}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+
             {/* ─── Trending Now ─── */}
             {trendingStories.length > 0 && (
               <motion.div
@@ -1063,7 +1257,7 @@ export default function App() {
                       </div>
                     </div>
                   ))
-                : filteredStories.map((story, i) => (
+                : visibleStories.map((story, i) => (
                     <motion.div
                       key={story.id}
                       className={i === 0 ? "col-12" : "col-12 col-md-6"}
@@ -1077,7 +1271,7 @@ export default function App() {
                         whileHover={{ y: i === 0 ? -5 : -8, scale: i === 0 ? 1.005 : 1.02, transition: { duration: 0.3, ease } }}
                       >
                         <div className="story-media">
-                          <img src={story.image} alt={story.alt} />
+                          <img src={story.image} alt={story.alt} loading="lazy" />
                           <div className="story-badge-row">
                             <div className="badge-left">
                               <span className="story-tag">{story.categoryLabel}</span>
@@ -1171,6 +1365,26 @@ export default function App() {
               >
                 <h3>No posts match that search yet.</h3>
                 <p>Try searching for a landmark, a food spot, or switch back to all stories.</p>
+              </motion.div>
+            )}
+
+            {!isLoading && filteredStories.length > visibleStories.length && (
+              <motion.div
+                className="section-cta-row"
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, ease }}
+              >
+                <motion.button
+                  type="button"
+                  className="card-button"
+                  onClick={loadMoreStories}
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                >
+                  Load more stories
+                </motion.button>
               </motion.div>
             )}
 
@@ -1875,7 +2089,7 @@ export default function App() {
               >
                 ×
               </motion.button>
-              <img src={modalStory.image} alt={modalStory.alt} />
+              <img src={modalStory.image} alt={modalStory.alt} loading="lazy" />
               <div className="story-modal-copy">
                 <p className="story-tag">{modalStory.categoryLabel}</p>
                 <h2 id="story-modal-title">{modalStory.title}</h2>

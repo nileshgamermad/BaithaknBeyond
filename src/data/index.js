@@ -31,6 +31,7 @@ export const stories = [
     readTime: "6 min read",
     accent: "",
     tags: ["heritage", "riverside", "spiritual", "sunrise"],
+    discoveryMoods: ["heritage", "hidden-gems"],
     mapEmbed: "https://www.google.com/maps?q=25.423,81.878&z=15&output=embed",
   },
   {
@@ -54,6 +55,7 @@ export const stories = [
     readTime: "5 min read",
     accent: "",
     tags: ["heritage", "mughal", "architecture", "history"],
+    discoveryMoods: ["heritage", "hidden-gems"],
     mapEmbed: "https://www.google.com/maps?q=25.429,81.867&z=16&output=embed",
   },
   {
@@ -78,6 +80,7 @@ export const stories = [
     readTime: "4 min read",
     accent: "gold",
     tags: ["food", "breakfast", "street food", "local favourite"],
+    discoveryMoods: ["food-trails", "hidden-gems"],
     mapEmbed: "https://www.google.com/maps?q=25.434,81.829&z=16&output=embed",
   },
   {
@@ -102,7 +105,35 @@ export const stories = [
     readTime: "5 min read",
     accent: "gold",
     tags: ["food", "street food", "chaat", "evening"],
+    discoveryMoods: ["food-trails", "evening-vibes"],
     mapEmbed: "https://www.google.com/maps?q=25.438,81.832&z=16&output=embed",
+  },
+];
+
+export const discoveryMoods = [
+  {
+    id: 'food-trails',
+    label: 'Food Trails',
+    description: 'Snack runs, breakfast rituals, and flavorful city circuits',
+    match: { category: 'food' },
+  },
+  {
+    id: 'heritage',
+    label: 'Heritage',
+    description: 'Riverfront legends, old architecture, and lived memory',
+    match: { category: 'history' },
+  },
+  {
+    id: 'evening-vibes',
+    label: 'Evening Vibes',
+    description: 'Stories with after-dark energy, street life, and food routes',
+    match: { tags: ['evening', 'street food'] },
+  },
+  {
+    id: 'hidden-gems',
+    label: 'Hidden Gems',
+    description: 'Places that feel locally loved and a little less obvious',
+    match: { tags: ['heritage', 'local favourite', 'architecture'] },
   },
 ];
 
