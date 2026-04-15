@@ -2132,22 +2132,28 @@ body[data-theme="dark"] .category-tile.active {
 }
 
 /* Image column: establish a positioning context so the img can be taken
-   out of flow entirely — prevents intrinsic img size from pushing the column wider */
+   out of flow entirely — prevents intrinsic img size from pushing the column wider.
+   CRITICAL: aspect-ratio must be unset here because the global .story-media rule
+   sets aspect-ratio:16/9. When min-height overrides the height derived from that
+   ratio, browsers satisfy the ratio by expanding WIDTH instead — blowing past the
+   50% grid track and overlapping the text column. */
 .story-card--featured .story-media {
-  position: relative;  /* positioning context for absolutely placed img */
-  overflow: hidden;    /* clip the image inside the column boundary */
-  min-height: 380px;   /* define height on the CONTAINER, not the img */
+  position: relative;   /* positioning context for absolutely placed img */
+  overflow: hidden;     /* clip the image inside the column boundary */
+  aspect-ratio: unset;  /* CANCEL global 16/9 — let the grid row control height */
+  min-height: unset;    /* grid row already has min-height via .story-card--featured */
+  align-self: stretch;  /* fill the full row height (default, but explicit for clarity) */
 }
 
 .story-card--featured .story-media img {
-  position: absolute;  /* decouple img dimensions from grid layout */
+  position: absolute;  /* decouple img from grid flow entirely */
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
   aspect-ratio: unset;
-  min-height: unset;   /* container controls height now */
+  min-height: unset;
 }
 
 /* Text column: keep content from overflowing on narrow viewports */
@@ -2190,12 +2196,10 @@ body[data-theme="dark"] .category-tile.active {
   }
 
   .story-card--featured .story-media {
-    min-height: 240px;  /* fixed height for the container in mobile stack */
-    height: auto;
-  }
-
-  .story-card--featured .story-media img {
-    /* img is absolutely positioned — inset:0 + width/height:100% already set above */
+    /* In mobile single-column stack, use aspect-ratio to give the image
+       container a sensible height without blowing out the layout */
+    aspect-ratio: 16 / 9;
+    min-height: unset;
   }
 
   .story-card--featured .story-copy {
@@ -2228,10 +2232,9 @@ body[data-theme="dark"] .featured-eyebrow {
   .story-card--featured {
     grid-template-columns: 1fr;
   }
-  .story-card--featured .story-media img {
+  .story-card--featured .story-media {
+    /* Single-column stack at 900px — restore aspect-ratio for the container */
     aspect-ratio: 16 / 9;
-    height: auto;
-    min-height: unset;
   }
   .story-card--featured .story-copy {
     padding: 24px;
