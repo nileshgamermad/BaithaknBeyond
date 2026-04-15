@@ -2,9 +2,23 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logoDefault from './assets/logo.png';
 import { sections, plannerOptions, plannerSuggestions, mapStops, categories, stories as staticStories } from './data/index.js';
-import { fetchStories, clearToken, getToken, getMe, fetchBookmarks, toggleBookmarkApi, recordInteraction } from './api/index.js';
+import {
+  fetchStories,
+  clearToken,
+  getToken,
+  getMe,
+  fetchBookmarks,
+  toggleBookmarkApi,
+  recordInteraction,
+  fetchCollections,
+  createCollectionApi,
+  addPostToCollectionApi,
+  fetchUserStats,
+} from './api/index.js';
 import AuthModal from './components/AuthModal.jsx';
 import ProfileDropdown from './components/ProfileDropdown.jsx';
+import SaveOptionsModal from './components/SaveOptionsModal.jsx';
+import CollectionsView from './components/CollectionsView.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
 
@@ -43,6 +57,9 @@ export default function App() {
   const [bookmarks, setBookmarks] = useState([]);
   const [toast, setToast] = useState(null);
   const [savedPanelOpen, setSavedPanelOpen] = useState(false);
+  const [collections, setCollections] = useState([]);
+  const [userStats, setUserStats] = useState({ savedPostsCount: 0, postsReadCount: 0, collectionsCount: 0 });
+  const [saveOptionsStoryId, setSaveOptionsStoryId] = useState('');
   const [recentlyViewed, setRecentlyViewed] = useState(() => {
     try { return JSON.parse(localStorage.getItem('baithak-recent') || '[]'); }
     catch { return []; }
@@ -201,6 +218,28 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?._id]); // only re-run when the logged-in account changes
 
+  useEffect(() => {
+    if (!currentUser?._id) {
+      setCollections([]);
+      setUserStats({ savedPostsCount: 0, postsReadCount: 0, collectionsCount: 0 });
+      return;
+    }
+
+    const token = getToken();
+    if (!token) return;
+
+    Promise.all([fetchCollections(token), fetchUserStats(token)])
+      .then(([nextCollections, nextStats]) => {
+        setCollections(nextCollections);
+        setUserStats(nextStats);
+      })
+      .catch((err) => {
+        console.error('[Ownership] Fetch failed:', err.message);
+        setCollections([]);
+        setUserStats({ savedPostsCount: 0, postsReadCount: 0, collectionsCount: 0 });
+      });
+  }, [currentUser?._id]);
+
   const allTags = useMemo(() => {
     const set = new Set();
     stories.forEach((s) => s.tags?.forEach((t) => set.add(t)));
@@ -277,6 +316,7 @@ export default function App() {
 
   const selectedStory = stories.find((s) => s.id === selectedStoryId) ?? stories[0];
   const modalStory   = stories.find((s) => s.id === modalStoryId)   ?? selectedStory;
+  const saveOptionsStory = stories.find((s) => s.id === saveOptionsStoryId) ?? null;
   const plannerKey        = `${planner.mood}-${planner.time}`;
   const plannerSuggestion = plannerSuggestions[plannerKey];
   const q = searchTerm.trim();
@@ -292,8 +332,12 @@ export default function App() {
     setModalStoryId(storyId);
     // Prepend to reading history, keep max 6 unique entries
     setRecentlyViewed((prev) => {
+      const isNewStory = !prev.includes(storyId);
       const updated = [storyId, ...prev.filter((id) => id !== storyId)].slice(0, 6);
       try { localStorage.setItem('baithak-recent', JSON.stringify(updated)); } catch {}
+      if (currentUser && isNewStory) {
+        setUserStats((stats) => ({ ...stats, postsReadCount: stats.postsReadCount + 1 }));
+      }
       return updated;
     });
     // Record view interaction for personalisation (fire-and-forget, logged-in only)
@@ -304,45 +348,118 @@ export default function App() {
     }
   };
 
-  const toggleBookmark = async (storyId) => {
+  const createCollection = async (name) => {
+    if (!currentUser) {
+      setAuthOpen(true);
+      throw new Error('Sign in to create a collection.');
+    }
+
+    const token = getToken();
+    if (!token) {
+      setAuthOpen(true);
+      throw new Error('Sign in to create a collection.');
+    }
+
+    const created = await createCollectionApi(token, name.trim());
+    setCollections((prev) => [created, ...prev]);
+    setUserStats((stats) => ({ ...stats, collectionsCount: stats.collectionsCount + 1 }));
+    showToast(`Created ${created.name}`);
+    return created;
+  };
+
+  const commitBookmark = async (storyId, shouldSave) => {
     if (!currentUser) {
       console.log('[Bookmark] Not signed in — opening auth modal');
       setAuthOpen(true);
-      return;
+      throw new Error('Sign in to save stories.');
     }
 
     const token = getToken();
     if (!token) {
       console.warn('[Bookmark] currentUser set but no token found — opening auth modal');
       setAuthOpen(true);
-      return;
+      throw new Error('Sign in to save stories.');
     }
 
-    // Capture snapshot BEFORE the optimistic flip so rollback is safe
-    // even if multiple toggles fire in quick succession.
     const snapshot = [...bookmarks];
     const wasBookmarked = snapshot.includes(storyId);
+    if (wasBookmarked === shouldSave) return snapshot;
 
-    // Optimistic update — flip immediately for snappy UX
-    setBookmarks(wasBookmarked
-      ? snapshot.filter((id) => id !== storyId)
-      : [...snapshot, storyId]);
+    const optimistic = shouldSave
+      ? [...snapshot, storyId]
+      : snapshot.filter((id) => id !== storyId);
+
+    setBookmarks(optimistic);
+    setUserStats((stats) => ({ ...stats, savedPostsCount: optimistic.length }));
 
     try {
       const updated = await toggleBookmarkApi(token, storyId);
-      console.log('[Bookmark] Toggled', storyId, '→', wasBookmarked ? 'removed' : 'saved',
+      console.log('[Bookmark] Toggled', storyId, '→', shouldSave ? 'saved' : 'removed',
                   '| total saved:', updated.length);
       setBookmarks(updated);
-      showToast(wasBookmarked ? 'Removed from saved' : '★  Saved to your collection');
-      // Record bookmark interaction for personalisation
+      setUserStats((stats) => ({ ...stats, savedPostsCount: updated.length }));
+      showToast(shouldSave ? '★  Saved to your collection' : 'Removed from saved');
       const story = stories.find((s) => s.id === storyId);
       if (story?.category) {
-        recordInteraction(token, { storyId, category: story.category, type: wasBookmarked ? 'unbookmark' : 'bookmark' });
+        recordInteraction(token, { storyId, category: story.category, type: shouldSave ? 'bookmark' : 'unbookmark' });
       }
+      return updated;
     } catch (err) {
       console.error('[Bookmark] API call failed, rolling back:', err.message);
-      setBookmarks(snapshot); // restore exact pre-click state
+      setBookmarks(snapshot);
+      setUserStats((stats) => ({ ...stats, savedPostsCount: snapshot.length }));
+      throw err;
     }
+  };
+
+  const toggleBookmark = async (storyId) => {
+    const shouldSave = !bookmarks.includes(storyId);
+    return commitBookmark(storyId, shouldSave);
+  };
+
+  const handleBookmarkAction = (storyId) => {
+    if (!currentUser) {
+      setAuthOpen(true);
+      return;
+    }
+
+    if (!getToken()) {
+      setAuthOpen(true);
+      return;
+    }
+
+    if (bookmarks.includes(storyId)) {
+      toggleBookmark(storyId).catch(() => {});
+      return;
+    }
+
+    setSaveOptionsStoryId(storyId);
+  };
+
+  const saveStoryDirect = async (storyId) => {
+    await commitBookmark(storyId, true);
+  };
+
+  const addStoryToCollection = async (storyId, collectionId) => {
+    const token = getToken();
+    if (!token) {
+      setAuthOpen(true);
+      throw new Error('Sign in to save stories.');
+    }
+
+    if (!bookmarks.includes(storyId)) {
+      await commitBookmark(storyId, true);
+    }
+
+    const updatedCollection = await addPostToCollectionApi(token, collectionId, storyId);
+    setCollections((prev) => {
+      const exists = prev.some((collection) => collection.id === updatedCollection.id);
+      return exists
+        ? prev.map((collection) => (collection.id === updatedCollection.id ? updatedCollection : collection))
+        : [updatedCollection, ...prev];
+    });
+    showToast(`Saved to ${updatedCollection.name}`);
+    return updatedCollection;
   };
 
   const handleEmailSubmit = (e) => {
@@ -375,7 +492,10 @@ export default function App() {
     try { localStorage.removeItem('baithak-user'); } catch {}
     setCurrentUser(null);
     setBookmarks([]);
+    setCollections([]);
+    setUserStats({ savedPostsCount: 0, postsReadCount: 0, collectionsCount: 0 });
     setSavedPanelOpen(false);
+    setSaveOptionsStoryId('');
   };
 
   const userInitials = currentUser?.name
@@ -540,10 +660,11 @@ export default function App() {
                     {profileOpen && (
                       <ProfileDropdown
                         user={currentUser}
-                        bookmarkCount={bookmarks.length}
+                        stats={userStats}
                         onSignOut={handleSignOut}
                         onClose={() => setProfileOpen(false)}
                         onViewSaved={() => { setSavedPanelOpen(true); setProfileOpen(false); }}
+                        onViewCollections={() => { window.location.href = '/collections/'; }}
                       />
                     )}
                   </div>
@@ -690,7 +811,7 @@ export default function App() {
                         type="button"
                         className={`bookmark-btn ${bookmarks.includes(story.id) ? 'bookmarked' : ''}`}
                         aria-label={bookmarks.includes(story.id) ? 'Remove bookmark' : 'Bookmark'}
-                        onClick={(e) => { e.stopPropagation(); toggleBookmark(story.id); }}
+                        onClick={(e) => { e.stopPropagation(); handleBookmarkAction(story.id); }}
                         whileHover={{ scale: 1.22 }}
                         whileTap={{ scale: 0.85 }}
                         style={{ position: 'absolute', top: 12, right: 12, zIndex: 2 }}
@@ -763,7 +884,7 @@ export default function App() {
                         type="button"
                         className={`bookmark-btn ${bookmarks.includes(story.id) ? 'bookmarked' : ''}`}
                         aria-label={bookmarks.includes(story.id) ? 'Remove bookmark' : 'Bookmark'}
-                        onClick={(e) => { e.stopPropagation(); toggleBookmark(story.id); }}
+                        onClick={(e) => { e.stopPropagation(); handleBookmarkAction(story.id); }}
                         whileHover={{ scale: 1.22 }}
                         whileTap={{ scale: 0.85 }}
                         style={{ position: 'absolute', top: 12, right: 12, zIndex: 2 }}
@@ -830,7 +951,7 @@ export default function App() {
                           type="button"
                           className={`bookmark-btn ${bookmarks.includes(story.id) ? 'bookmarked' : ''}`}
                           aria-label={bookmarks.includes(story.id) ? 'Remove bookmark' : 'Bookmark'}
-                          onClick={(e) => { e.stopPropagation(); toggleBookmark(story.id); }}
+                          onClick={(e) => { e.stopPropagation(); handleBookmarkAction(story.id); }}
                           whileHover={{ scale: 1.22 }}
                           whileTap={{ scale: 0.85 }}
                           style={{ position: 'absolute', top: 12, right: 12, zIndex: 2 }}
@@ -968,7 +1089,7 @@ export default function App() {
                                 type="button"
                                 className={`bookmark-btn ${bookmarks.includes(story.id) ? "bookmarked" : ""}`}
                                 aria-label={bookmarks.includes(story.id) ? "Remove bookmark" : "Bookmark"}
-                                onClick={() => toggleBookmark(story.id)}
+                                onClick={() => handleBookmarkAction(story.id)}
                                 whileHover={{ scale: 1.22 }}
                                 whileTap={{ scale: 0.85 }}
                               >
@@ -1115,7 +1236,7 @@ export default function App() {
                             type="button"
                             className={`bookmark-btn ${bookmarks.includes(editorsPicks[0].id) ? 'bookmarked' : ''}`}
                             aria-label="Bookmark"
-                            onClick={(e) => { e.stopPropagation(); toggleBookmark(editorsPicks[0].id); }}
+                            onClick={(e) => { e.stopPropagation(); handleBookmarkAction(editorsPicks[0].id); }}
                             whileHover={{ scale: 1.22 }}
                             whileTap={{ scale: 0.85 }}
                           >
@@ -1234,7 +1355,7 @@ export default function App() {
                             type="button"
                             className={`bookmark-btn ${bookmarks.includes(story.id) ? 'bookmarked' : ''}`}
                             aria-label={bookmarks.includes(story.id) ? 'Remove bookmark' : 'Bookmark'}
-                            onClick={(e) => { e.stopPropagation(); toggleBookmark(story.id); }}
+                            onClick={(e) => { e.stopPropagation(); handleBookmarkAction(story.id); }}
                             whileHover={{ scale: 1.22 }}
                             whileTap={{ scale: 0.85 }}
                             style={{ position: 'absolute', top: 12, right: 12, zIndex: 2 }}
@@ -1308,6 +1429,37 @@ export default function App() {
               })}
             </div>
           </section>
+
+          <motion.section
+            className="collections-section"
+            id="collections"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.65, ease }}
+          >
+            {currentUser ? (
+              <CollectionsView
+                currentUser={currentUser}
+                stories={stories}
+                collections={collections}
+                onCreateCollection={createCollection}
+                onOpenStory={openStory}
+              />
+            ) : (
+              <div className="profile-guest glass-panel">
+                <p>Create collections once you sign in, then organize your saved stories however you like.</p>
+                <div className="discover-actions">
+                  <button type="button" className="nav-auth-btn" onClick={() => setAuthOpen(true)}>
+                    Sign in
+                  </button>
+                  <a className="ghost-link" href="/collections/">
+                    View collections page
+                  </a>
+                </div>
+              </div>
+            )}
+          </motion.section>
 
           {/* Planner + Spotlight */}
           <section className="content-with-sidebar row g-4 align-items-start" id="planner">
@@ -1558,14 +1710,29 @@ export default function App() {
                 <p className="profile-card-email">{currentUser.email}</p>
                 <div className="profile-card-stats">
                   <div className="profile-card-stat">
-                    <span>{bookmarks.length}</span>
+                    <span>{userStats.savedPostsCount}</span>
                     <label>Saved stories</label>
                   </div>
                   <div className="profile-card-stat">
-                    <span>{currentUser.role === 'admin' ? 'Admin' : 'Member'}</span>
-                    <label>Account type</label>
+                    <span>{userStats.collectionsCount}</span>
+                    <label>Collections</label>
+                  </div>
+                  <div className="profile-card-stat">
+                    <span>{userStats.postsReadCount}</span>
+                    <label>Stories read</label>
                   </div>
                 </div>
+                <div className="story-actions" style={{ justifyContent: 'center' }}>
+                  <a className="card-button" href="/collections/">
+                    Open collections
+                  </a>
+                  <button type="button" className="ghost-link" onClick={() => setSavedPanelOpen(true)}>
+                    View saved posts
+                  </button>
+                </div>
+                <p className="profile-card-role">
+                  {currentUser.role === 'admin' ? 'Admin account' : 'Member account'}
+                </p>
                 <button type="button" className="profile-card-signout" onClick={handleSignOut}>
                   Sign out
                 </button>
@@ -1746,6 +1913,17 @@ export default function App() {
         />
       )}
 
+      {saveOptionsStory && (
+        <SaveOptionsModal
+          story={saveOptionsStory}
+          collections={collections}
+          onClose={() => setSaveOptionsStoryId('')}
+          onSaveDirect={saveStoryDirect}
+          onAddToCollection={addStoryToCollection}
+          onCreateCollection={createCollection}
+        />
+      )}
+
       {/* ─── Saved Posts Panel ─── */}
       <AnimatePresence>
         {savedPanelOpen && (
@@ -1795,8 +1973,8 @@ export default function App() {
                 {savedStories.length === 0 ? (
                   <div className="saved-panel-empty">
                     <div className="saved-panel-empty-icon">☆</div>
-                    <h3>Nothing saved yet</h3>
-                    <p>Tap the ☆ on any story to save it here for later.</p>
+                    <h3>Save stories to see them here</h3>
+                    <p>Tap the ☆ on any story to save it here for later, then sort them into collections.</p>
                     <motion.button
                       type="button"
                       className="card-button"
@@ -1806,6 +1984,9 @@ export default function App() {
                     >
                       Browse Stories
                     </motion.button>
+                    <a className="ghost-link" href="/collections/">
+                      Open collections
+                    </a>
                   </div>
                 ) : (
                   <div className="saved-panel-grid">

@@ -2,7 +2,7 @@
   position: absolute;
   top: calc(100% + 0.5rem);
   right: 0;
-  width: 240px;
+  width: 280px;
   /* Solid surface — no bleed-through on mobile */
   background: #fdf8f3;
   border: 1px solid rgba(130, 52, 24, 0.14);
@@ -133,6 +133,40 @@ body[data-theme="dark"] .profile-stat-label { color: rgba(216, 223, 240, 0.48); 
   font-family: inherit;
   letter-spacing: 0.02em;
   transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.profile-view-collections {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid rgba(23, 72, 89, 0.16);
+  border-radius: 10px;
+  background: rgba(23, 72, 89, 0.05);
+  color: #174859;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.profile-view-collections:hover {
+  background: rgba(23, 72, 89, 0.1);
+  border-color: rgba(23, 72, 89, 0.3);
+}
+
+body[data-theme="dark"] .profile-view-collections {
+  border-color: rgba(78, 205, 196, 0.2);
+  background: rgba(78, 205, 196, 0.08);
+  color: #4ecdc4;
+}
+
+body[data-theme="dark"] .profile-view-collections:hover {
+  background: rgba(78, 205, 196, 0.14);
+  border-color: rgba(78, 205, 196, 0.34);
 }
 
 .profile-view-saved:hover {

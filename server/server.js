@@ -6,6 +6,8 @@ import storyRoutes from './routes/stories.js';
 import authRoutes from './routes/auth.js';
 import bookmarkRoutes from './routes/bookmarks.js';
 import interactionRoutes from './routes/interactions.js';
+import collectionRoutes from './routes/collections.js';
+import userRoutes from './routes/users.js';
 
 dotenv.config();
 
@@ -44,6 +46,8 @@ app.use('/api/stories', storyRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/bookmarks', bookmarkRoutes);
 app.use('/api/interactions', interactionRoutes);
+app.use('/api/collections', collectionRoutes);
+app.use('/api/users', userRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

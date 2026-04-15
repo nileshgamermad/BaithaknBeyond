@@ -11,6 +11,7 @@ export default defineConfig(({ command }) => ({
     rollupOptions: {
       input: {
         main: resolveFromRoot('index.html'),
+        collections: resolveFromRoot('collections/index.html'),
         triveniSangam: resolveFromRoot('posts/triveni-sangam.html'),
         allahabadFort: resolveFromRoot('posts/allahabad-fort.html'),
         netramKachori: resolveFromRoot('posts/netram-kachori.html'),

@@ -1811,6 +1811,7 @@ body[data-theme="dark"] .mobile-nav-link.active {
 
 .profile-card-stats {
   display: flex;
+  flex-wrap: wrap;
   gap: 2rem;
   padding: 0.85rem 0;
   border-top: 1px solid var(--border, rgba(0,0,0,0.08));
@@ -1836,6 +1837,12 @@ body[data-theme="dark"] .mobile-nav-link.active {
 .profile-card-stat label {
   font-size: 0.72rem;
   color: var(--text-muted, #888);
+}
+
+.profile-card-role {
+  margin: 0;
+  color: var(--text-muted, #666);
+  font-size: 0.78rem;
 }
 
 .profile-card-signout {

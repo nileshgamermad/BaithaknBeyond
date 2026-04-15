@@ -71,6 +71,60 @@ export const toggleBookmarkApi = async (token, storyId) => {
   return res.json();
 };
 
+export const fetchCollections = async (token) => {
+  const res = await fetch(`${BASE}/collections`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return [];
+  return res.json();
+};
+
+export const createCollectionApi = async (token, name) => {
+  const res = await fetch(`${BASE}/collections`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ name }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Failed to create collection');
+  return data;
+};
+
+export const addPostToCollectionApi = async (token, collectionId, postId) => {
+  const res = await fetch(`${BASE}/collections/${collectionId}/posts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ postId }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Failed to add post to collection');
+  return data;
+};
+
+export const removePostFromCollectionApi = async (token, collectionId, postId) => {
+  const res = await fetch(`${BASE}/collections/${collectionId}/posts/${postId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Failed to remove post from collection');
+  return data;
+};
+
+export const fetchUserStats = async (token) => {
+  const res = await fetch(`${BASE}/users/me/stats`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return { savedPostsCount: 0, postsReadCount: 0, collectionsCount: 0 };
+  return res.json();
+};
+
 // ── Personalization ───────────────────────────────────────────────────────────
 
 // Fire-and-forget: records a story interaction for personalization scoring.
