@@ -41,6 +41,12 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [logoSrc, setLogoSrc] = useState(logoDefault);
   const [bookmarks, setBookmarks] = useState([]);
+  const [toast, setToast] = useState(null);
+  const [savedPanelOpen, setSavedPanelOpen] = useState(false);
+  const [recentlyViewed, setRecentlyViewed] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('baithak-recent') || '[]'); }
+    catch { return []; }
+  });
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -203,6 +209,14 @@ export default function App() {
 
   const trendingStories = useMemo(() => stories.filter((s) => s.trending), [stories]);
   const editorsPicks    = useMemo(() => stories.filter((s) => s.editorsPick), [stories]);
+  const recentStories   = useMemo(
+    () => recentlyViewed.map((id) => stories.find((s) => s.id === id)).filter(Boolean),
+    [recentlyViewed, stories]
+  );
+  const savedStories    = useMemo(
+    () => bookmarks.map((id) => stories.find((s) => s.id === id)).filter(Boolean),
+    [bookmarks, stories]
+  );
 
   const filteredStories = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
@@ -235,6 +249,12 @@ export default function App() {
   const openStory = (storyId) => {
     setSelectedStoryId(storyId);
     setModalStoryId(storyId);
+    // Prepend to reading history, keep max 6 unique entries
+    setRecentlyViewed((prev) => {
+      const updated = [storyId, ...prev.filter((id) => id !== storyId)].slice(0, 6);
+      try { localStorage.setItem('baithak-recent', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
   };
 
   const toggleBookmark = async (storyId) => {
@@ -265,7 +285,8 @@ export default function App() {
       const updated = await toggleBookmarkApi(token, storyId);
       console.log('[Bookmark] Toggled', storyId, '→', wasBookmarked ? 'removed' : 'saved',
                   '| total saved:', updated.length);
-      setBookmarks(updated); // replace with authoritative server list
+      setBookmarks(updated);
+      showToast(wasBookmarked ? 'Removed from saved' : '★  Saved to your collection');
     } catch (err) {
       console.error('[Bookmark] API call failed, rolling back:', err.message);
       setBookmarks(snapshot); // restore exact pre-click state
@@ -285,6 +306,13 @@ export default function App() {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
+  // Auto-dismissing toast — id prevents stale timer from hiding a newer toast
+  const showToast = (message, type = 'success') => {
+    const id = Date.now();
+    setToast({ message, type, id });
+    setTimeout(() => setToast((t) => (t?.id === id ? null : t)), 2800);
+  };
+
   const handleAuth = (userData) => {
     setCurrentUser(userData);
     try { localStorage.setItem('baithak-user', JSON.stringify(userData)); } catch {}
@@ -295,6 +323,7 @@ export default function App() {
     try { localStorage.removeItem('baithak-user'); } catch {}
     setCurrentUser(null);
     setBookmarks([]);
+    setSavedPanelOpen(false);
   };
 
   const userInitials = currentUser?.name
@@ -462,6 +491,7 @@ export default function App() {
                         bookmarkCount={bookmarks.length}
                         onSignOut={handleSignOut}
                         onClose={() => setProfileOpen(false)}
+                        onViewSaved={() => { setSavedPanelOpen(true); setProfileOpen(false); }}
                       />
                     )}
                   </div>
@@ -559,6 +589,79 @@ export default function App() {
 
         {/* ─── MAIN ─── */}
         <main className="container site-container page-content">
+
+          {/* ─── Continue Reading / Recently Viewed ─── */}
+          {recentStories.length > 0 && (
+            <motion.section
+              className="section-stack continue-reading-section"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.55, ease }}
+            >
+              <div className="section-heading">
+                <div>
+                  <p className="section-kicker">Pick up where you left off</p>
+                  <h2>Recently Viewed</h2>
+                </div>
+                <motion.button
+                  type="button"
+                  className="ghost-link continue-clear-btn"
+                  onClick={() => {
+                    setRecentlyViewed([]);
+                    try { localStorage.removeItem('baithak-recent'); } catch {}
+                  }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.96 }}
+                >
+                  Clear history
+                </motion.button>
+              </div>
+
+              <div className="trending-strip">
+                {recentStories.map((story, i) => (
+                  <motion.article
+                    key={story.id}
+                    className="trending-card"
+                    initial={{ opacity: 0, y: 18 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.45, delay: i * 0.07, ease }}
+                    whileHover={{ y: -5, transition: { duration: 0.25, ease } }}
+                    onClick={() => openStory(story.id)}
+                  >
+                    <div className="trending-card-media">
+                      <img src={story.image} alt={story.alt} loading="lazy" />
+                      <div className="trending-overlay" />
+                      <div className="trending-badges">
+                        {i === 0
+                          ? <span className="label-badge badge-continue">▶ Continue</span>
+                          : <span className="label-badge badge-recent">Viewed</span>
+                        }
+                        <span className="read-pill">{story.readTime}</span>
+                      </div>
+                      <motion.button
+                        type="button"
+                        className={`bookmark-btn ${bookmarks.includes(story.id) ? 'bookmarked' : ''}`}
+                        aria-label={bookmarks.includes(story.id) ? 'Remove bookmark' : 'Bookmark'}
+                        onClick={(e) => { e.stopPropagation(); toggleBookmark(story.id); }}
+                        whileHover={{ scale: 1.22 }}
+                        whileTap={{ scale: 0.85 }}
+                        style={{ position: 'absolute', top: 12, right: 12, zIndex: 2 }}
+                      >
+                        {bookmarks.includes(story.id) ? '★' : '☆'}
+                      </motion.button>
+                    </div>
+                    <div className="trending-card-copy">
+                      <p className="story-location">{story.location}</p>
+                      <h3>{story.title}</h3>
+                      <p>{story.summary}</p>
+                    </div>
+                  </motion.article>
+                ))}
+              </div>
+            </motion.section>
+          )}
 
           {/* Stories */}
           <section className="section-stack" id="stories">
@@ -1451,6 +1554,135 @@ export default function App() {
           onAuth={handleAuth}
         />
       )}
+
+      {/* ─── Saved Posts Panel ─── */}
+      <AnimatePresence>
+        {savedPanelOpen && (
+          <>
+            {/* Scrim */}
+            <motion.div
+              className="saved-panel-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={() => setSavedPanelOpen(false)}
+            />
+            {/* Panel */}
+            <motion.div
+              className="saved-panel"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', stiffness: 280, damping: 30 }}
+            >
+              {/* Header */}
+              <div className="saved-panel-header">
+                <div>
+                  <p className="saved-panel-kicker">Your collection</p>
+                  <h2 className="saved-panel-title">
+                    Saved Stories
+                    {savedStories.length > 0 && (
+                      <span className="saved-panel-count">{savedStories.length}</span>
+                    )}
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  className="saved-panel-close"
+                  aria-label="Close saved panel"
+                  onClick={() => setSavedPanelOpen(false)}
+                >
+                  <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
+                    <path d="M18 6 6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="saved-panel-body">
+                {savedStories.length === 0 ? (
+                  <div className="saved-panel-empty">
+                    <div className="saved-panel-empty-icon">☆</div>
+                    <h3>Nothing saved yet</h3>
+                    <p>Tap the ☆ on any story to save it here for later.</p>
+                    <motion.button
+                      type="button"
+                      className="card-button"
+                      onClick={() => { setSavedPanelOpen(false); jumpToSection('stories'); }}
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.96 }}
+                    >
+                      Browse Stories
+                    </motion.button>
+                  </div>
+                ) : (
+                  <div className="saved-panel-grid">
+                    {savedStories.map((story, i) => (
+                      <motion.article
+                        key={story.id}
+                        className="saved-panel-card"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.35, delay: i * 0.06, ease }}
+                        onClick={() => { setSavedPanelOpen(false); openStory(story.id); }}
+                      >
+                        <div className="saved-panel-card-img">
+                          <img src={story.image} alt={story.alt} loading="lazy" />
+                          <span className="story-tag saved-panel-cat">{story.categoryLabel}</span>
+                        </div>
+                        <div className="saved-panel-card-copy">
+                          <p className="story-location">{story.location}</p>
+                          <h3>{story.title}</h3>
+                          <p>{story.summary}</p>
+                          <div className="saved-panel-card-actions">
+                            <motion.button
+                              type="button"
+                              className="card-button"
+                              style={{ fontSize: '0.74rem', padding: '8px 16px', minHeight: 36 }}
+                              onClick={(e) => { e.stopPropagation(); setSavedPanelOpen(false); openStory(story.id); }}
+                              whileHover={{ scale: 1.04 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              Quick view
+                            </motion.button>
+                            <motion.button
+                              type="button"
+                              className="ghost-link saved-remove-btn"
+                              onClick={(e) => { e.stopPropagation(); toggleBookmark(story.id); }}
+                              whileHover={{ scale: 1.04 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              Remove
+                            </motion.button>
+                          </div>
+                        </div>
+                      </motion.article>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Toast Notification ─── */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            key={toast.id}
+            className={`toast-notification toast-${toast.type}`}
+            initial={{ opacity: 0, y: 24, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 12, scale: 0.95 }}
+            transition={{ duration: 0.28, ease }}
+          >
+            {toast.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
