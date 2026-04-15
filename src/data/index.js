@@ -13,6 +13,9 @@ export const stories = [
     slug: "triveni-sangam.html",
     category: "history",
     categoryLabel: "Heritage Story",
+    trending: true,
+    editorsPick: true,
+    isNew: false,
     title: "The Legends of Triveni Sangam",
     image:
       "https://dharmikbharatyatra.com/wp-content/uploads/2024/12/Boat-ride-in-prayagraj-1024x576.webp",
@@ -34,6 +37,9 @@ export const stories = [
     slug: "allahabad-fort.html",
     category: "history",
     categoryLabel: "Heritage Story",
+    trending: true,
+    editorsPick: false,
+    isNew: false,
     title: "Inside Allahabad Fort",
     image: "https://www.optimatravels.com/images/allahabad-images/allahabad-fort-head.jpg",
     alt: "Historic fort architecture lit by sunlight",
@@ -54,6 +60,9 @@ export const stories = [
     slug: "netram-kachori.html",
     category: "food",
     categoryLabel: "Food Story",
+    trending: false,
+    editorsPick: true,
+    isNew: true,
     title: "The Legendary Netram Kachori",
     image:
       "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/c8/46/f9/caption.jpg?w=1000&h=1000&s=1",
@@ -75,6 +84,9 @@ export const stories = [
     slug: "chowk-street-food.html",
     category: "food",
     categoryLabel: "Food Story",
+    trending: false,
+    editorsPick: false,
+    isNew: true,
     title: "Street Food of Chowk",
     image:
       "https://www.thecitizen.in/h-upload/old_images/1500x900_155909-c4a62b6e399ac05a08d9e8e5bb402dc6.webp",
@@ -117,6 +129,33 @@ export const plannerSuggestions = {
   "food-afternoon": "Build a short tasting route with chaat, lassi, and one old-school dessert shop.",
   "food-evening": "Head to Chowk for the liveliest street-food circuit and stay flexible.",
 };
+
+export const categories = [
+  {
+    id: 'history',
+    label: 'Heritage',
+    description: 'Forts, temples, and timeless streets',
+    image: 'https://www.optimatravels.com/images/allahabad-images/allahabad-fort-head.jpg',
+  },
+  {
+    id: 'food',
+    label: 'Food Trails',
+    description: 'Breakfast classics, street food, and evening eats',
+    image: 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2f/c8/46/f9/caption.jpg?w=1000&h=1000&s=1',
+  },
+  {
+    id: 'culture',
+    label: 'Culture',
+    description: 'Festivals, traditions, and everyday rituals',
+    image: 'https://dharmikbharatyatra.com/wp-content/uploads/2024/12/Boat-ride-in-prayagraj-1024x576.webp',
+  },
+  {
+    id: 'travel',
+    label: 'Travel',
+    description: 'Day trips, routes, and neighbourhood walks',
+    image: 'https://www.thecitizen.in/h-upload/old_images/1500x900_155909-c4a62b6e399ac05a08d9e8e5bb402dc6.webp',
+  },
+];
 
 export const mapStops = [
   {

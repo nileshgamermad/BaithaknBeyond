@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logoDefault from './assets/logo.png';
-import { sections, plannerOptions, plannerSuggestions, mapStops, stories as staticStories } from './data/index.js';
+import { sections, plannerOptions, plannerSuggestions, mapStops, categories, stories as staticStories } from './data/index.js';
 import { fetchStories, clearToken, getToken, getMe, fetchBookmarks, toggleBookmarkApi } from './api/index.js';
 import AuthModal from './components/AuthModal.jsx';
 import ProfileDropdown from './components/ProfileDropdown.jsx';
@@ -200,6 +200,9 @@ export default function App() {
     stories.forEach((s) => s.tags?.forEach((t) => set.add(t)));
     return [...set];
   }, []);
+
+  const trendingStories = useMemo(() => stories.filter((s) => s.trending), [stories]);
+  const editorsPicks    = useMemo(() => stories.filter((s) => s.editorsPick), [stories]);
 
   const filteredStories = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
@@ -566,8 +569,63 @@ export default function App() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, ease }}
             >
-              <div><p className="section-kicker">Featured journal</p></div>
+              <div>
+                <p className="section-kicker">The full collection</p>
+                <h2>Latest Stories</h2>
+              </div>
             </motion.div>
+
+            {/* ─── Trending Now ─── */}
+            {trendingStories.length > 0 && (
+              <motion.div
+                className="trending-now"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, ease }}
+              >
+                <div className="trending-header">
+                  <span className="trending-title">
+                    <span aria-hidden="true">🔥</span> Trending Now
+                  </span>
+                </div>
+                <div className="trending-strip">
+                  {trendingStories.map((story) => (
+                    <motion.article
+                      key={story.id}
+                      className="trending-card"
+                      whileHover={{ y: -5, transition: { duration: 0.25, ease } }}
+                      onClick={() => openStory(story.id)}
+                    >
+                      <div className="trending-card-media">
+                        <img src={story.image} alt={story.alt} loading="lazy" />
+                        <div className="trending-overlay" />
+                        <div className="trending-badges">
+                          <span className="label-badge badge-trending">Trending</span>
+                          <span className="read-pill">{story.readTime}</span>
+                        </div>
+                        <motion.button
+                          type="button"
+                          className={`bookmark-btn ${bookmarks.includes(story.id) ? 'bookmarked' : ''}`}
+                          aria-label={bookmarks.includes(story.id) ? 'Remove bookmark' : 'Bookmark'}
+                          onClick={(e) => { e.stopPropagation(); toggleBookmark(story.id); }}
+                          whileHover={{ scale: 1.22 }}
+                          whileTap={{ scale: 0.85 }}
+                          style={{ position: 'absolute', top: 12, right: 12, zIndex: 2 }}
+                        >
+                          {bookmarks.includes(story.id) ? '★' : '☆'}
+                        </motion.button>
+                      </div>
+                      <div className="trending-card-copy">
+                        <p className="story-location">{story.location}</p>
+                        <h3>{story.title}</h3>
+                        <p>{story.summary}</p>
+                      </div>
+                    </motion.article>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
             {/* Category strip */}
             <div className="category-strip">
@@ -678,7 +736,10 @@ export default function App() {
                         <div className="story-media">
                           <img src={story.image} alt={story.alt} />
                           <div className="story-badge-row">
-                            <span className="story-tag">{story.categoryLabel}</span>
+                            <div className="badge-left">
+                              <span className="story-tag">{story.categoryLabel}</span>
+                              {story.isNew && <span className="label-badge badge-new">New</span>}
+                            </div>
                             <div className="badge-right">
                               <span className="read-pill">{story.readTime}</span>
                               <motion.button
@@ -789,6 +850,169 @@ export default function App() {
                 </motion.button>
               </motion.div>
             )}
+          </section>
+
+          {/* ─── Editor's Picks ─── */}
+          {editorsPicks.length > 0 && (
+            <section className="section-stack editors-picks-section">
+              <motion.div
+                className="section-heading"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, ease }}
+              >
+                <div>
+                  <p className="section-kicker">Curated reads</p>
+                  <h2><span aria-hidden="true">⭐</span> Editor's Picks</h2>
+                </div>
+              </motion.div>
+
+              <div className="editors-grid row g-4">
+                {/* Large featured pick */}
+                <motion.div
+                  className="col-12 col-lg-7"
+                  initial={{ opacity: 0, y: 32 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.65, ease }}
+                >
+                  <article
+                    className="editors-feature-card story-card"
+                    onClick={() => openStory(editorsPicks[0].id)}
+                  >
+                    <div className="story-media">
+                      <img src={editorsPicks[0].image} alt={editorsPicks[0].alt} loading="lazy" />
+                      <div className="story-badge-row">
+                        <div className="badge-left">
+                          <span className="label-badge badge-editors">Editor's Pick</span>
+                        </div>
+                        <div className="badge-right">
+                          <span className="read-pill">{editorsPicks[0].readTime}</span>
+                          <motion.button
+                            type="button"
+                            className={`bookmark-btn ${bookmarks.includes(editorsPicks[0].id) ? 'bookmarked' : ''}`}
+                            aria-label="Bookmark"
+                            onClick={(e) => { e.stopPropagation(); toggleBookmark(editorsPicks[0].id); }}
+                            whileHover={{ scale: 1.22 }}
+                            whileTap={{ scale: 0.85 }}
+                          >
+                            {bookmarks.includes(editorsPicks[0].id) ? '★' : '☆'}
+                          </motion.button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="story-copy editors-feature-copy">
+                      <p className="story-location">{editorsPicks[0].location}</p>
+                      <h3>{editorsPicks[0].title}</h3>
+                      <p>{editorsPicks[0].detail}</p>
+                      <div className="story-actions">
+                        <motion.a
+                          className={`card-button ${editorsPicks[0].accent}`}
+                          href={`posts/${editorsPicks[0].slug}`}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Read Full Story
+                        </motion.a>
+                        <motion.button
+                          type="button"
+                          className="ghost-link"
+                          onClick={(e) => { e.stopPropagation(); openStory(editorsPicks[0].id); }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.96 }}
+                        >
+                          Quick preview
+                        </motion.button>
+                      </div>
+                    </div>
+                  </article>
+                </motion.div>
+
+                {/* Side picks */}
+                <div className="col-12 col-lg-5">
+                  <div className="editors-side-stack">
+                    {editorsPicks.slice(1).map((story, i) => (
+                      <motion.article
+                        key={story.id}
+                        className="editors-side-card story-card"
+                        initial={{ opacity: 0, x: 24 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.55, delay: i * 0.12, ease }}
+                        whileHover={{ y: -3, transition: { duration: 0.22 } }}
+                        onClick={() => openStory(story.id)}
+                      >
+                        <div className="editors-side-media">
+                          <img src={story.image} alt={story.alt} loading="lazy" />
+                          <span className="label-badge badge-editors" style={{ position: 'absolute', top: 10, left: 10, zIndex: 1 }}>Pick</span>
+                        </div>
+                        <div className="editors-side-copy story-copy">
+                          <p className="story-location">{story.location}</p>
+                          <h3>{story.title}</h3>
+                          <p>{story.summary}</p>
+                        </div>
+                      </motion.article>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ─── Category Preview ─── */}
+          <section className="section-stack category-preview-section">
+            <motion.div
+              className="section-heading"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, ease }}
+            >
+              <div>
+                <p className="section-kicker">Browse by interest</p>
+                <h2>Explore categories</h2>
+              </div>
+            </motion.div>
+
+            <div className="category-preview-grid row g-3">
+              {categories.map((cat, i) => {
+                const count = stories.filter((s) => s.category === cat.id).length;
+                return (
+                  <motion.div
+                    key={cat.id}
+                    className="col-6 col-lg-3"
+                    initial={{ opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: i * 0.08, ease }}
+                  >
+                    <motion.button
+                      type="button"
+                      className="category-preview-card"
+                      onClick={() => { setActiveFilter(cat.id); setActiveTag(''); jumpToSection('stories'); }}
+                      whileHover={{ y: -5, transition: { duration: 0.22 } }}
+                      whileTap={{ scale: 0.97 }}
+                    >
+                      <div className="category-preview-img">
+                        <img src={cat.image} alt={cat.label} loading="lazy" />
+                        <div className="category-preview-overlay" />
+                      </div>
+                      <div className="category-preview-copy">
+                        <span className="category-preview-name">{cat.label}</span>
+                        <span className="category-preview-desc">{cat.description}</span>
+                        {count > 0 && (
+                          <span className="category-preview-count">
+                            {count} {count === 1 ? 'story' : 'stories'}
+                          </span>
+                        )}
+                      </div>
+                    </motion.button>
+                  </motion.div>
+                );
+              })}
+            </div>
           </section>
 
           {/* Planner + Spotlight */}
