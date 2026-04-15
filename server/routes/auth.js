@@ -37,6 +37,8 @@ const oauthLogin = async (providerField, providerId, { name, email, avatar }) =>
     });
   }
 
+  console.log('[Auth] OAUTH LOGIN email:', user.email, '| userId:', user._id,
+              '| provider:', providerField.replace('Id', ''));
   return {
     _id:       user._id,
     name:      user.name,
@@ -60,6 +62,7 @@ router.post('/register', async (req, res) => {
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ message: 'Email already registered' });
     const user = await User.create({ name, email, password });
+    console.log('[Auth] REGISTER email:', user.email, '| userId:', user._id);
     res.status(201).json({
       _id:       user._id,
       name:      user.name,
@@ -82,8 +85,10 @@ router.post('/login', async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user || !(await user.matchPassword(password))) {
+      console.warn('[Auth] LOGIN failed for email:', email);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
+    console.log('[Auth] LOGIN email:', user.email, '| userId:', user._id);
     res.json({
       _id:       user._id,
       name:      user.name,

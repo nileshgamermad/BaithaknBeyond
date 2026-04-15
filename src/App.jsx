@@ -291,6 +291,7 @@ export default function App() {
     clearToken();
     try { localStorage.removeItem('baithak-user'); } catch {}
     setCurrentUser(null);
+    setBookmarks([]);
   };
 
   const userInitials = currentUser?.name

@@ -10,7 +10,12 @@ export const protect = async (req, res, next) => {
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.id).select('-password');
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user) {
+      // Token was valid but the account no longer exists in the DB
+      return res.status(401).json({ message: 'User account not found' });
+    }
+    req.user = user;
     next();
   } catch {
     res.status(401).json({ message: 'Token invalid or expired' });
