@@ -14,105 +14,90 @@
     href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap"
     rel="stylesheet"
   >
-  <link rel="stylesheet" href="blog.css">
 </head>
 <body>
-  <main class="page">
-    <a class="back-link" href="../">Back to homepage</a>
-    <section class="hero glass">
-      <img
-        src="https://www.optimatravels.com/images/allahabad-images/allahabad-fort-head.jpg"
-        alt="Historic fort architecture lit by sunlight"
-      >
-      <div class="hero-copy">
-        <p class="eyebrow">Heritage Story</p>
-        <h1>Inside Allahabad Fort</h1>
-        <p>
-          Allahabad Fort stands at the meeting point of empire, geography, and faith, holding one
-          of the strongest visual presences along the riverfront.
-        </p>
-        <div class="meta-row">
-          <span class="meta-pill">Allahabad Fort</span>
-          <span class="meta-pill">5 min read</span>
-          <span class="meta-pill">Historic architecture</span>
-        </div>
-        <div class="share-row">
-          <span class="share-label">Share</span>
-          <button class="share-btn" type="button" data-share="whatsapp">WhatsApp</button>
-          <button class="share-btn" type="button" data-share="twitter">Twitter / X</button>
-        </div>
-      </div>
-    </section>
-    <section class="content">
-      <article class="article glass">
-        <p>
-          The fort makes an immediate impression because it feels both immense and controlled.
-          Massive walls hold in more than military memory. They also frame the riverfront and shape
-          the way people understand the historical scale of Prayagraj.
-        </p>
-        <p>
-          Built during the Mughal period, the structure carries visible power, but it also absorbs
-          later layers of use and interpretation. That complexity is part of what keeps it
-          compelling. Visitors rarely leave speaking only about architecture. They also talk about
-          setting, atmosphere, and proximity to the Sangam.
-        </p>
-        <h2>What makes it memorable</h2>
-        <p>
-          The fort has gravity. Its size matters, but so does the contrast between stone enclosure
-          and the openness of the nearby rivers. It feels anchored, observant, and still deeply
-          connected to the stories people tell about the city today.
-        </p>
-        <p>
-          If you are building a heritage route, this is one of the strongest starting points because
-          it immediately situates Prayagraj within a broader historical frame.
-        </p>
-      </article>
-      <aside class="aside-stack">
-        <section class="aside-card glass">
-          <h3>Visit note</h3>
-          <p>Pair this with a Sangam stop to balance architecture, ritual geography, and river views.</p>
-        </section>
-        <section class="aside-card glass">
-          <h3>Map</h3>
-          <p>Use the fort as a heritage anchor, then walk outward toward the surrounding riverfront.</p>
-          <div class="map-frame">
-            <iframe
-              title="Map of Allahabad Fort"
-              src="https://www.google.com/maps?q=25.429,81.867&z=16&output=embed"
-              loading="lazy"
-              referrerpolicy="no-referrer-when-downgrade"
-            ></iframe>
-          </div>
-          <div class="cta-row">
-            <a class="button" href="https://www.google.com/maps/search/?api=1&query=25.429,81.867" target="_blank" rel="noreferrer">Open map</a>
-            <a class="button ghost" href="../">Explore more stories</a>
-          </div>
-        </section>
-      </aside>
-    </section>
+  <div id="article-root"></div>
 
-    <section class="related-posts">
+  <div id="article-source" hidden>
+    <script id="article-data" type="application/json">
+      {
+        "storyId": "allahabad-fort",
+        "category": "history",
+        "categoryLabel": "Heritage Story",
+        "title": "Inside Allahabad Fort",
+        "author": "Baithak & Beyond Editorial",
+        "publishedAt": "2025-02-03",
+        "dek": "Allahabad Fort stands at the meeting point of empire, geography, and faith, holding one of the strongest visual presences along the riverfront.",
+        "image": "https://www.optimatravels.com/images/allahabad-images/allahabad-fort-head.jpg",
+        "alt": "Historic fort architecture lit by sunlight"
+      }
+    </script>
+
+    <template id="article-body">
+      <p>
+        The fort makes an immediate impression because it feels both immense and controlled.
+        Massive walls hold in more than military memory. They also frame the riverfront and shape
+        the way people understand the historical scale of Prayagraj.
+      </p>
+      <p>
+        Built during the Mughal period, the structure carries visible power, but it also absorbs
+        later layers of use and interpretation. That complexity is part of what keeps it
+        compelling. Visitors rarely leave speaking only about architecture. They also talk about
+        setting, atmosphere, and proximity to the Sangam.
+      </p>
+      <h2>What makes it memorable</h2>
+      <p>
+        The fort has gravity. Its size matters, but so does the contrast between stone enclosure
+        and the openness of the nearby rivers. It feels anchored, observant, and still deeply
+        connected to the stories people tell about the city today.
+      </p>
+      <p>
+        If you are building a heritage route, this is one of the strongest starting points because
+        it immediately situates Prayagraj within a broader historical frame.
+      </p>
+    </template>
+
+    <template id="article-note">
+      <h3>Visit note</h3>
+      <p>Pair this with a Sangam stop to balance architecture, ritual geography, and river views.</p>
+    </template>
+
+    <template id="article-map">
+      <h3>Map</h3>
+      <p>Use the fort as a heritage anchor, then walk outward toward the surrounding riverfront.</p>
+      <div class="map-frame">
+        <iframe
+          title="Map of Allahabad Fort"
+          src="https://www.google.com/maps?q=25.429,81.867&z=16&output=embed"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </div>
+      <div class="cta-row">
+        <a class="button" href="https://www.google.com/maps/search/?api=1&query=25.429,81.867" target="_blank" rel="noreferrer">Open map</a>
+        <a class="button ghost" href="../">Explore more stories</a>
+      </div>
+    </template>
+
+    <template id="article-related">
       <h2>More from Baithak &amp; Beyond</h2>
       <div class="related-grid">
-        <a class="related-card glass" href="triveni-sangam.html">
+        <a class="related-card" href="triveni-sangam.html">
           <span class="related-category">Heritage Story</span>
           <strong>The Legends of Triveni Sangam</strong>
         </a>
-        <a class="related-card glass" href="netram-kachori.html">
+        <a class="related-card" href="netram-kachori.html">
           <span class="related-category">Food Story</span>
           <strong>The Legendary Netram Kachori</strong>
         </a>
-        <a class="related-card glass" href="chowk-street-food.html">
+        <a class="related-card" href="chowk-street-food.html">
           <span class="related-category">Food Story</span>
           <strong>Street Food of Chowk</strong>
         </a>
       </div>
-    </section>
-  </main>
-  <button class="theme-switch" type="button" id="themeSwitch" aria-label="Toggle theme">
-    <span class="switch-track"><span class="switch-thumb"></span></span>
-    <span id="themeLabel">Dark mode</span>
-  </button>
-  <script src="theme.js"></script>
+    </template>
+  </div>
+
+  <script type="module" src="./article-main.jsx"></script>
 </body>
 </html>
