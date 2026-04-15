@@ -33,7 +33,7 @@ body[data-theme="dark"] .profile-dropdown {
   height: 48px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--accent, #5b7cfa);
+  border: 2px solid var(--accent, #8B1E1E);
   flex-shrink: 0;
 }
 
@@ -41,7 +41,7 @@ body[data-theme="dark"] .profile-dropdown {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--accent, #5b7cfa);
+  background: var(--accent, #8B1E1E);
   color: #fff;
   display: flex;
   align-items: center;
