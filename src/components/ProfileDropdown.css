@@ -202,6 +202,31 @@ body[data-theme="dark"] .profile-view-saved-count {
   color: #0F0F0F;
 }
 
+/* Edit profile */
+.profile-edit-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.profile-edit-btn:hover {
+  background: rgba(107, 122, 82, 0.07);
+  border-color: rgba(107, 122, 82, 0.25);
+  transform: translateX(2px);
+}
+
 /* Sign out */
 .profile-signout {
   width: 100%;

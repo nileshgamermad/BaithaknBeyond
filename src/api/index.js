@@ -78,25 +78,57 @@ export const fetchTags = async () => {
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
 
-export const register = async (name, email, password) => {
-  const res = await fetch(`${BASE}/auth/register`, {
+export const sendOTP = async (email) => {
+  const res = await fetch(`${BASE}/auth/send-otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify({ email }),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Registration failed');
+  if (!res.ok) throw new Error(data.message || 'Failed to send OTP');
   return data;
 };
 
-export const login = async (email, password) => {
-  const res = await fetch(`${BASE}/auth/login`, {
+export const verifyOTP = async (email, otp) => {
+  const res = await fetch(`${BASE}/auth/verify-otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, otp }),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Login failed');
+  if (!res.ok) throw new Error(data.message || 'Verification failed');
+  return data;
+};
+
+export const sendSecureOTP = async (token) => {
+  const res = await fetch(`${BASE}/auth/send-otp-secure`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Failed to send OTP');
+  return data;
+};
+
+export const verifySecureOTP = async (token, otp) => {
+  const res = await fetch(`${BASE}/auth/verify-otp-secure`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ otp }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Verification failed');
+  return data;
+};
+
+export const updateProfile = async (token, { name, avatar, editToken }) => {
+  const res = await fetch(`${BASE}/users/me/profile`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ name, avatar, editToken }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Profile update failed');
   return data;
 };
 

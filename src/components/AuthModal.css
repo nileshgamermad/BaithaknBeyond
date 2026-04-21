@@ -367,6 +367,49 @@ body[data-theme="dark"] .auth-submit {
 
 body[data-theme="dark"] .nav-user-initials { color: #0F0F0F; }
 
+/* ── OTP resend row ─────────────────────────────────── */
+.auth-resend-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+.auth-resend-btn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  transition: opacity 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.auth-resend-btn:disabled {
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.auth-resend-btn:not(:disabled):hover { text-decoration: underline; }
+
+.auth-back-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.auth-back-btn:hover { color: var(--text); }
+
 /* ── Mobile ─────────────────────────────────────────── */
 @media (max-width: 480px) {
   .auth-modal {

@@ -26,6 +26,7 @@ import {
 } from './api/index.js';
 import AuthModal from './components/AuthModal.jsx';
 import ProfileDropdown from './components/ProfileDropdown.jsx';
+import ProfileEditModal from './components/ProfileEditModal.jsx';
 import SaveOptionsModal from './components/SaveOptionsModal.jsx';
 import CollectionsView from './components/CollectionsView.jsx';
 
@@ -87,6 +88,7 @@ export default function App() {
   const [storyResultMeta, setStoryResultMeta] = useState({ total: staticStories.length, hasMore: false });
   const [authOpen, setAuthOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [profileEditOpen, setProfileEditOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem('baithak-user') || 'null'); }
     catch { return null; }
@@ -588,6 +590,12 @@ export default function App() {
     try { localStorage.setItem('baithak-user', JSON.stringify(userData)); } catch {}
   };
 
+  const handleProfileSaved = (updatedUser) => {
+    const merged = { ...currentUser, ...updatedUser };
+    setCurrentUser(merged);
+    try { localStorage.setItem('baithak-user', JSON.stringify(merged)); } catch {}
+  };
+
   const handleSignOut = () => {
     clearToken();
     try { localStorage.removeItem('baithak-user'); } catch {}
@@ -828,6 +836,7 @@ export default function App() {
                         onClose={() => setProfileOpen(false)}
                         onViewSaved={() => { setSavedPanelOpen(true); setProfileOpen(false); }}
                         onViewCollections={() => { window.location.href = '/collections/'; }}
+                        onEditProfile={() => setProfileEditOpen(true)}
                       />
                     )}
                   </div>
@@ -2125,6 +2134,15 @@ export default function App() {
         <AuthModal
           onClose={() => setAuthOpen(false)}
           onAuth={handleAuth}
+        />
+      )}
+
+      {profileEditOpen && currentUser && (
+        <ProfileEditModal
+          user={currentUser}
+          token={getToken()}
+          onClose={() => setProfileEditOpen(false)}
+          onSaved={handleProfileSaved}
         />
       )}
 

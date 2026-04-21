@@ -1,6 +1,14 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import rateLimit from 'express-rate-limit';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
 import { connectDB } from './config/db.js';
 import storyRoutes from './routes/stories.js';
 import authRoutes from './routes/auth.js';
@@ -8,17 +16,24 @@ import bookmarkRoutes from './routes/bookmarks.js';
 import interactionRoutes from './routes/interactions.js';
 import collectionRoutes from './routes/collections.js';
 import userRoutes from './routes/users.js';
-
-dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Rate limiters
+const otpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many OTP requests. Please wait 15 minutes.' },
+});
 
 // Connect to MongoDB Atlas
 connectDB();
 
 // CORS — allow requests from the frontend dev server and production origin
 const allowedOrigins = [
+  'http://localhost:5000',
   'http://localhost:5173',
   'http://localhost:4173',
   'https://baithaknbeyond.com',
@@ -38,10 +53,16 @@ app.use(
   })
 );
 
+// Serve test page at http://localhost:5000/test.html (same-origin → no CORS)
+app.use(express.static(path.join(__dirname, '../scripts')));
+
 // Parse JSON bodies
 app.use(express.json());
 
 // Routes
+app.use('/api/auth/send-otp', otpLimiter);
+app.use('/api/auth/send-otp-secure', otpLimiter);
+
 app.use('/api/stories', storyRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/bookmarks', bookmarkRoutes);
@@ -59,6 +80,18 @@ app.use((_req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+});
+
+server.on('error', (err) => {
+  console.error('Server error:', err.message);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled rejection:', err);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
 });
