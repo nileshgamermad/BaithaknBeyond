@@ -16,6 +16,7 @@ import bookmarkRoutes from './routes/bookmarks.js';
 import interactionRoutes from './routes/interactions.js';
 import collectionRoutes from './routes/collections.js';
 import userRoutes from './routes/users.js';
+import subscribeRoutes from './routes/subscribe.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -63,8 +64,17 @@ app.use(express.static(path.join(__dirname, '../scripts')));
 app.use(express.json());
 
 // Routes
+const subscribeLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many subscribe attempts. Please try again later.' },
+});
+
 app.use('/api/auth/send-otp', otpLimiter);
 app.use('/api/auth/send-otp-secure', otpLimiter);
+app.use('/api/subscribe', subscribeLimiter);
 
 app.use('/api/stories', storyRoutes);
 app.use('/api/auth', authRoutes);
@@ -72,6 +82,7 @@ app.use('/api/bookmarks', bookmarkRoutes);
 app.use('/api/interactions', interactionRoutes);
 app.use('/api/collections', collectionRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/subscribe', subscribeRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {

@@ -565,15 +565,30 @@ export default function App() {
     return updatedCollection;
   };
 
-  const handleEmailSubmit = (e) => {
+  const [subscribeLoading, setSubscribeLoading] = useState(false);
+  const [subscribeError, setSubscribeError]     = useState('');
+
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim()) return;
+    setSubscribeLoading(true);
+    setSubscribeError('');
     try {
-      const existing = JSON.parse(localStorage.getItem("baithak-subscribers") || "[]");
-      localStorage.setItem("baithak-subscribers", JSON.stringify([...existing, email.trim()]));
-    } catch {}
-    setEmailSubmitted(true);
-    setEmail("");
+      const base = import.meta.env.VITE_API_URL || 'https://baithakn-beyond-backend.onrender.com/api';
+      const res  = await fetch(`${base}/subscribe`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email: email.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Something went wrong.');
+      setEmailSubmitted(true);
+      setEmail('');
+    } catch (err) {
+      setSubscribeError(err.message);
+    } finally {
+      setSubscribeLoading(false);
+    }
   };
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
@@ -2019,14 +2034,20 @@ export default function App() {
                   <motion.button
                     type="submit"
                     className="subscribe-button"
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: subscribeLoading ? 1 : 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    disabled={subscribeLoading}
                   >
-                    Subscribe
+                    {subscribeLoading ? 'Subscribing…' : 'Subscribe'}
                   </motion.button>
                 </motion.form>
               )}
             </AnimatePresence>
+            {subscribeError && !emailSubmitted && (
+              <p style={{ color: '#c0392b', fontSize: '0.82rem', marginTop: '0.5rem', textAlign: 'center' }}>
+                {subscribeError}
+              </p>
+            )}
           </div>
         </footer>
 
