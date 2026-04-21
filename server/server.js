@@ -28,6 +28,9 @@ const otpLimiter = rateLimit({
   message: { message: 'Too many OTP requests. Please wait 15 minutes.' },
 });
 
+// Trust Render/proxy X-Forwarded-For headers (required for rate limiting)
+app.set('trust proxy', 1);
+
 // Connect to MongoDB Atlas
 connectDB();
 
