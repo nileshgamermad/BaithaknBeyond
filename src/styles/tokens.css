@@ -1,0 +1,159 @@
+/* ── Design tokens ─────────────────────────────────────────────────────────── */
+/* Import in index.css BEFORE baithak-home.css so tokens are available globally */
+
+:root {
+  /* Backgrounds */
+  --color-bg:         #FAF8F4;
+  --color-bg-raised:  #F2EFE9;
+  --color-surface:    #FFFFFF;
+  --color-border:     #E4DED4;
+
+  /* Ink (text) */
+  --color-ink:   #1C1917;
+  --color-ink-2: #44403C;
+  --color-ink-3: #78716C;
+  --color-ink-4: #A8A29E;
+
+  /* Brand palette */
+  --color-sage:       #6B7A52;
+  --color-sage-light: #8A9B6A;
+  --color-amber:      #B85C38;
+  --color-gold:       #C49A6C;
+  --color-river:      #2D6A8F;
+
+  /* Navbar bg (RGB for alpha compositing) */
+  --navbar-bg: 250, 248, 244;
+
+  /* Typography */
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans:  'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Border radii */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+
+  /* Shadows */
+  --shadow-card:  0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+  --shadow-hover: 0 8px 24px rgba(0,0,0,0.12), 0 24px 48px rgba(0,0,0,0.08);
+  --shadow-modal: 0 24px 64px rgba(0,0,0,0.18);
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* Section padding */
+  --section-px: clamp(24px, 5vw, 96px);
+  --section-py: clamp(64px, 8vw, 120px);
+
+  /* Max widths */
+  --max-w-content: 1200px;
+  --max-w-text:    680px;
+}
+
+/* ── Dark mode overrides ────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --color-bg:        #0F0E0C;
+  --color-bg-raised: #1A1917;
+  --color-surface:   #242220;
+  --color-border:    #2E2C28;
+
+  --color-ink:   #F5F1EB;
+  --color-ink-2: #C8C2B8;
+  --color-ink-3: #8A8278;
+  --color-ink-4: #5A544E;
+
+  --color-sage:       #A8BC82;
+  --color-sage-light: #C0D49A;
+  --color-gold:       #D4AF37;
+
+  --navbar-bg: 15, 14, 12;
+
+  --shadow-card:  0 2px 8px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.2);
+  --shadow-hover: 0 8px 24px rgba(0,0,0,0.4), 0 24px 48px rgba(0,0,0,0.3);
+}
+
+/* ── Base resets ────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+img { max-width: 100%; display: block; }
+a   { color: inherit; }
+
+/* ── Utility classes ────────────────────────────────────────────────────────── */
+.section-container {
+  max-width: var(--max-w-content);
+  margin: 0 auto;
+  padding: var(--section-py) var(--section-px);
+}
+
+.section-kicker {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-sage);
+  margin: 0 0 12px;
+}
+
+.section-heading {
+  font-family: var(--font-serif);
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+  margin: 0 0 16px;
+}
+
+.section-sub {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--color-ink-3);
+  max-width: var(--max-w-text);
+  margin: 0;
+}
+
+/* Stories grid */
+.stories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+@media (max-width: 640px) {
+  .stories-grid { grid-template-columns: 1fr; gap: 16px; }
+}
+
+/* Hide on mobile / show on mobile */
+@media (max-width: 767px) {
+  .hide-mobile  { display: none !important; }
+}
+@media (min-width: 768px) {
+  .show-mobile  { display: none !important; }
+}
